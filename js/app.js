@@ -150,15 +150,7 @@ CONTEXTE SNCF :
   }
 ];
 
-const questionDefs = [
-  { id:'q1', title:'Projet — Demande initiale',        sub:'Intitulé du projet ou de la demande',              ph:'Nom ou intitulé court du projet...',              tag:'input',    hint:'Ex. « Optimiser le traitement des demandes »' },
-  { id:'q2', title:'Contexte — Origine de la demande',  sub:'Qu\'est-ce qui a déclenché cette demande ?',       ph:'Décrivez l\'élément déclencheur...',               tag:'textarea', hint:'Événement, irritant, opportunité, contrainte.' },
-  { id:'q3', title:'Finalité — Objectif N+1',           sub:'Vous voulez… dans quel but ?',                     ph:'Quel est l\'objectif supérieur ?',                 tag:'textarea', hint:'Pour aboutir à quoi ?' },
-  { id:'q4', title:'Résultats attendus',                 sub:'À quoi saurez-vous que c\'est atteint ?',         ph:'Indicateurs de succès, résultats concrets...',     tag:'textarea', hint:'Mesures, critères, preuves, livrables.' },
-  { id:'q5', title:'Acteurs directement concernés',      sub:'Qui est impacté ?',                               ph:'Personnes, équipes, services impactés...',         tag:'textarea', hint:'Utilisateurs finaux, opérationnels, managers.' },
-  { id:'q6', title:'Réseau intervenants',                sub:'Alliés, opposants, décideurs…',                   ph:'Alliés, opposants, décideurs...',                  tag:'textarea', hint:'Qui facilite ? Qui freine ? Qui arbitre ?' },
-  { id:'q7', title:'Enjeux spécifiques',                 sub:'Gains / pertes, enjeux stratégiques…',            ph:'Enjeux stratégiques, opérationnels...',            tag:'textarea', hint:'Risques, dépendances, contraintes.' }
-];
+let questionDefs = [];
 
 const modelDefs = [
   { id: 'claude-opus-4-6',            label: 'Claude Opus 4.6',     audio: true  },
@@ -171,11 +163,20 @@ const modelDefs = [
 /* ═══════════════════════════════════════
    INIT
    ═══════════════════════════════════════ */
-renderQuestionnaire();
-renderAgentGrid();
-onModelChange();
-updateCfg();
-initDragDrop();
+async function init() {
+  try {
+    const res = await fetch('data/cadrage-questions.json');
+    questionDefs = await res.json();
+  } catch (e) {
+    console.error('Impossible de charger cadrage-questions.json :', e);
+  }
+  renderQuestionnaire();
+  renderAgentGrid();
+  onModelChange();
+  updateCfg();
+  initDragDrop();
+}
+init();
 
 /* ═══════════════════════════════════════
    AGENTS
