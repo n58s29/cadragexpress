@@ -229,7 +229,8 @@
         <div class="grid-2">
           <div class="fgroup">
             <label class="flabel">Modèle</label>
-            <input class="finput" id="cfgModel" type="text" value="claude-sonnet-4-20250514" />
+            <select class="finput" id="cfgModel" onchange="onModelChange()"></select>
+            <div id="audioCompatMsg"></div>
           </div>
           <div class="fgroup">
             <label class="flabel">Max tokens</label>

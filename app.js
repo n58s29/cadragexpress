@@ -160,11 +160,20 @@ const questionDefs = [
   { id:'q7', title:'Enjeux spécifiques',                 sub:'Gains / pertes, enjeux stratégiques…',            ph:'Enjeux stratégiques, opérationnels...',            tag:'textarea', hint:'Risques, dépendances, contraintes.' }
 ];
 
+const modelDefs = [
+  { id: 'claude-opus-4-6',            label: 'Claude Opus 4.6',     audio: true  },
+  { id: 'claude-sonnet-4-6',          label: 'Claude Sonnet 4.6',   audio: true  },
+  { id: 'claude-sonnet-4-20250514',   label: 'Claude Sonnet 4',     audio: true  },
+  { id: 'claude-haiku-4-5-20251001',  label: 'Claude Haiku 4.5',    audio: false },
+  { id: 'claude-haiku-3-5-20241022',  label: 'Claude Haiku 3.5',    audio: false },
+];
+
 /* ═══════════════════════════════════════
    INIT
    ═══════════════════════════════════════ */
 renderQuestionnaire();
 renderAgentGrid();
+initModelSelect();
 updateCfg();
 initDragDrop();
 
@@ -222,6 +231,30 @@ function getActiveAgentsPayload() {
     payload[a.label] = a.prompt;
   });
   return payload;
+}
+
+/* ═══════════════════════════════════════
+   MODEL SELECT
+   ═══════════════════════════════════════ */
+function initModelSelect() {
+  const sel = document.getElementById('cfgModel');
+  sel.innerHTML = modelDefs.map(m =>
+    `<option value="${m.id}">${m.label}</option>`
+  ).join('');
+  sel.value = 'claude-sonnet-4-20250514';
+  onModelChange();
+}
+
+function onModelChange() {
+  const sel = document.getElementById('cfgModel');
+  const def = modelDefs.find(m => m.id === sel.value);
+  const msg = document.getElementById('audioCompatMsg');
+  if (!def) { msg.innerHTML = ''; return; }
+  if (def.audio) {
+    msg.innerHTML = '<span class="audio-compat-badge">🎙 Compatible audio</span>';
+  } else {
+    msg.innerHTML = '<span class="audio-incompat-badge">⚠ Audio non supporté avec ce modèle</span>';
+  }
 }
 
 /* ═══════════════════════════════════════
