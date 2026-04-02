@@ -173,7 +173,7 @@ const modelDefs = [
    ═══════════════════════════════════════ */
 renderQuestionnaire();
 renderAgentGrid();
-initModelSelect();
+onModelChange();
 updateCfg();
 initDragDrop();
 
@@ -236,15 +236,6 @@ function getActiveAgentsPayload() {
 /* ═══════════════════════════════════════
    MODEL SELECT
    ═══════════════════════════════════════ */
-function initModelSelect() {
-  const sel = document.getElementById('cfgModel');
-  sel.innerHTML = modelDefs.map(m =>
-    `<option value="${m.id}">${m.label}</option>`
-  ).join('');
-  sel.value = 'claude-sonnet-4-20250514';
-  onModelChange();
-}
-
 function onModelChange() {
   const sel = document.getElementById('cfgModel');
   const def = modelDefs.find(m => m.id === sel.value);
