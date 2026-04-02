@@ -1,857 +1,1165 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>574 · Cadrage Express v5</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<style>
-/* ═══════════ RESET & TOKENS ═══════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { height: 100%; }
-body {
-  height: 100%;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  background: #f1f3f8;
-  color: #1a1f2e;
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadrage Express v7 — FAN</title>
+  <style>
+    :root {
+      --bleu-marine: #00205b;
+      --bleu-deep: #001440;
+      --bleu-abyss: #000d2e;
+      --cerulean: #0084d4;
+      --ambre: #eed484;
+      --blanc: #ffffff;
+      --bleu-horizon: #a4c8e1;
+      --menthe: #00b388;
+      --lavande: #8374d1;
+      --ocre: #dc582a;
+      --burgundy: #651c32;
+      --card-bg: rgba(255,255,255,0.04);
+      --card-border: rgba(255,255,255,0.08);
+      --card-hover: rgba(255,255,255,0.07);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255,255,255,0.7);
+      --text-tertiary: rgba(255,255,255,0.45);
+      --border-subtle: rgba(255,255,255,0.1);
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Avenir', 'Avenir Next', -apple-system, Arial, sans-serif;
+      background: var(--bleu-marine);
+      color: var(--blanc);
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-weight: 300;
+      line-height: 1.6;
+    }
 
-:root {
-  --navy: #0c2d5a;
-  --blue: #2563eb;
-  --blue-light: #eff4ff;
-  --blue-muted: #93b4f5;
-  --accent: #e84e3a;
-  --accent-light: #fef0ee;
-  --green: #059669;
-  --green-light: #ecfdf5;
-  --green-border: #6ee7b7;
-  --danger: #dc2626;
-  --surface: #ffffff;
-  --surface-alt: #f8f9fc;
-  --border: #e5e7eb;
-  --border-light: #f0f1f5;
-  --ink: #1a1f2e;
-  --ink2: #4b5563;
-  --ink3: #9ca3af;
-  --radius: 12px;
-  --radius-lg: 16px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
-  --shadow-lg: 0 8px 30px rgba(0,0,0,.08);
-  --transition: 200ms cubic-bezier(.4,0,.2,1);
-}
+    /* ═══════ NAV ═══════ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(0,32,91,0.97);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(164,200,225,0.15);
+      height: 60px;
+      padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .nav-brand .logo-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--cerulean), var(--lavande));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 500; font-size: 14px; color: #fff;
+    }
+    .nav-brand h1 {
+      font-size: 15px; font-weight: 500; letter-spacing: -0.01em;
+    }
+    .nav-brand .version {
+      font-size: 11px; font-weight: 400; color: var(--text-tertiary);
+      margin-left: 4px;
+    }
+    .nav-right {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .nav-status {
+      font-size: 11px; font-weight: 400; color: var(--text-tertiary);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+    }
+    .status-dot.ok { background: var(--menthe); }
+    .status-dot.warn { background: var(--ambre); }
+    .btn-config {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-secondary); font-size: 16px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-config:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.2);
+      color: var(--blanc);
+    }
 
-/* ═══════════ SCROLLBAR ═══════════ */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+    /* ═══════ STEPPER ═══════ */
+    .stepper {
+      position: fixed; top: 60px; left: 0; right: 0; z-index: 90;
+      background: rgba(0,20,64,0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-subtle);
+      height: 50px; padding: 0 2rem;
+      display: flex; align-items: stretch; gap: 0;
+    }
+    .step-tab {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 24px; cursor: pointer;
+      border: none; background: none;
+      font-family: inherit; font-size: 13px; font-weight: 400;
+      color: var(--text-tertiary); position: relative;
+      transition: color 0.2s;
+    }
+    .step-tab:hover { color: var(--text-secondary); }
+    .step-tab.active { color: var(--cerulean); }
+    .step-tab.done { color: var(--menthe); }
+    .step-tab::after {
+      content: ''; position: absolute; bottom: 0; left: 12px; right: 12px;
+      height: 2px; border-radius: 2px 2px 0 0;
+      background: transparent; transition: background 0.3s;
+    }
+    .step-tab.active::after { background: var(--cerulean); }
+    .step-tab.done::after { background: var(--menthe); }
+    .step-num {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 500; font-size: 11px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      color: var(--text-tertiary); background: rgba(255,255,255,0.04);
+      transition: all 0.3s;
+    }
+    .step-tab.active .step-num {
+      border-color: var(--cerulean); background: var(--cerulean); color: #fff;
+    }
+    .step-tab.done .step-num {
+      border-color: var(--menthe); background: var(--menthe); color: #fff;
+    }
+    .step-connector {
+      display: flex; align-items: center; padding: 0 2px;
+      color: rgba(255,255,255,0.15); font-size: 10px;
+    }
 
-/* ═══════════ LAYOUT ═══════════ */
-.app { height: 100%; display: flex; flex-direction: column; }
+    /* ═══════ MAIN ═══════ */
+    .main {
+      max-width: 960px; margin: 0 auto;
+      padding: 130px 2rem 4rem;
+    }
+    .panel { display: none; }
+    .panel.visible { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ─── TOPBAR ─── */
-.topbar {
-  height: 56px; display: flex; align-items: center; gap: 16px;
-  padding: 0 28px;
-  background: var(--navy);
-  color: #fff;
-  flex-shrink: 0;
-}
-.topbar .logo {
-  font-weight: 800; font-size: 15px; letter-spacing: .2px;
-  display: flex; align-items: center; gap: 10px;
-}
-.topbar .logo-icon {
-  width: 28px; height: 28px; border-radius: 7px;
-  background: rgba(255,255,255,.15);
-  display: grid; place-items: center;
-  font-size: 13px; font-weight: 800;
-}
-.topbar .sub { font-weight: 400; font-size: 12px; opacity: .5; margin-left: 6px; }
-.topbar .version {
-  margin-left: auto;
-  font-size: 11px; font-weight: 600; opacity: .4;
-  letter-spacing: .5px;
-}
+    /* ═══════ CARDS ═══════ */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .card-hd {
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.02);
+    }
+    .card-hd h3 {
+      font-size: 14px; font-weight: 500; color: var(--blanc);
+    }
+    .card-hd .badge {
+      margin-left: auto; font-size: 10px; font-weight: 500;
+      padding: 3px 10px; border-radius: 2rem;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .card-hd .badge.ok { background: rgba(0,179,136,0.15); border-color: rgba(0,179,136,0.3); color: var(--menthe); }
+    .card-hd .badge.warn { background: rgba(220,88,42,0.15); border-color: rgba(220,88,42,0.3); color: var(--ocre); }
+    .card-bd { padding: 20px; }
 
-/* ─── STEPPER BAR ─── */
-.stepper-bar {
-  background: #fff; border-bottom: 1px solid var(--border);
-  padding: 0 28px; display: flex; align-items: stretch;
-  height: 58px; flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0,0,0,.03);
-}
-.step-tab {
-  display: flex; align-items: center; gap: 10px; padding: 0 22px;
-  cursor: pointer; border: none; background: none;
-  font-family: inherit; font-size: 13px; font-weight: 600;
-  color: var(--ink3); position: relative;
-  transition: color var(--transition);
-}
-.step-tab:hover { color: var(--ink2); }
-.step-tab.active { color: var(--blue); }
-.step-tab.done { color: var(--green); }
-.step-tab .bar {
-  position: absolute; bottom: 0; left: 10px; right: 10px;
-  height: 3px; border-radius: 3px 3px 0 0;
-  background: transparent; transition: background var(--transition);
-}
-.step-tab.active .bar { background: var(--blue); }
-.step-tab.done .bar { background: var(--green); }
-.step-num {
-  width: 30px; height: 30px; border-radius: 50%;
-  display: grid; place-items: center;
-  font-weight: 700; font-size: 12px;
-  border: 2px solid var(--border);
-  color: var(--ink3); background: var(--surface-alt);
-  transition: all var(--transition);
-}
-.step-tab.active .step-num { border-color: var(--blue); background: var(--blue); color: #fff; }
-.step-tab.done .step-num { border-color: var(--green); background: var(--green); color: #fff; }
-.step-connector { display: flex; align-items: center; padding: 0 4px; color: #d1d5db; font-size: 14px; }
+    /* ═══════ FORMS ═══════ */
+    .flabel {
+      display: block; font-size: 11px; font-weight: 500;
+      color: var(--text-secondary); margin-bottom: 6px;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .finput, .ftextarea {
+      width: 100%; padding: 10px 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      font-family: inherit; font-size: 13px; font-weight: 300;
+      color: var(--blanc); outline: none;
+      transition: all 0.2s;
+    }
+    .finput:focus, .ftextarea:focus {
+      border-color: var(--cerulean);
+      box-shadow: 0 0 0 3px rgba(0,132,212,0.15);
+      background: rgba(255,255,255,0.06);
+    }
+    .finput::placeholder, .ftextarea::placeholder {
+      color: var(--text-tertiary);
+    }
+    .ftextarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+    .fhint { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; font-weight: 300; }
+    .fgroup { margin-bottom: 14px; }
+    .fgroup:last-child { margin-bottom: 0; }
+    .finput.filled, .ftextarea.filled { border-color: rgba(0,179,136,0.3); }
+    .finput.missing, .ftextarea.missing { border-color: rgba(220,88,42,0.4); background: rgba(220,88,42,0.06); }
 
-/* ─── MAIN ─── */
-.main-area { flex: 1; overflow-y: auto; padding: 28px; }
-.step-panel { display: none; max-width: 960px; margin: 0 auto; animation: fadeUp .3s ease; }
-.step-panel.visible { display: block; }
+    /* ═══════ BUTTONS ═══════ */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      font-family: inherit; font-size: 12px; font-weight: 400;
+      color: var(--text-secondary); cursor: pointer;
+      transition: all 0.2s; text-decoration: none;
+    }
+    .btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: var(--blanc); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn.primary {
+      background: var(--cerulean); border-color: var(--cerulean); color: #fff;
+    }
+    .btn.primary:hover { background: #009ae6; }
+    .btn.primary:disabled { background: rgba(0,132,212,0.4); border-color: transparent; }
+    .btn.accent {
+      background: linear-gradient(135deg, var(--cerulean), var(--lavande));
+      border-color: transparent; color: #fff;
+    }
+    .btn.accent:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn.sm { padding: 6px 12px; font-size: 11px; border-radius: 8px; }
+    .btn.danger { background: rgba(220,88,42,0.12); border-color: rgba(220,88,42,0.3); color: var(--ocre); }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+    /* ═══════ MODE TOGGLE ═══════ */
+    .method-toggle {
+      display: inline-flex; border-radius: 10px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 20px;
+    }
+    .method-btn {
+      padding: 10px 20px; border: none;
+      background: transparent;
+      font-family: inherit; font-size: 12px; font-weight: 400;
+      color: var(--text-tertiary); cursor: pointer;
+      transition: all 0.2s;
+    }
+    .method-btn:not(:last-child) { border-right: 1px solid rgba(255,255,255,0.1); }
+    .method-btn.active { background: var(--cerulean); color: #fff; }
+    .method-btn:hover:not(.active) { background: rgba(255,255,255,0.06); color: var(--text-secondary); }
 
-/* ═══════════ CARD ═══════════ */
-.card {
-  background: #fff; border: 1px solid var(--border);
-  border-radius: var(--radius-lg); overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 18px;
-}
-.card-hd {
-  padding: 16px 22px; border-bottom: 1px solid var(--border-light);
-  display: flex; align-items: center; gap: 12px;
-  background: var(--surface-alt);
-}
-.card-hd h3 { font-size: 14px; font-weight: 700; color: var(--navy); }
-.card-hd .badge {
-  font-size: 11px; font-weight: 600;
-  padding: 4px 14px; border-radius: 99px;
-  background: var(--surface-alt); border: 1px solid var(--border); color: var(--ink3);
-  transition: all var(--transition);
-}
-.card-hd .badge.ok { background: var(--green-light); border-color: var(--green-border); color: var(--green); }
-.card-hd .badge.warn { background: #fffbeb; border-color: #fcd34d; color: #b45309; }
-.card-bd { padding: 22px; }
+    /* ═══════ DROP ZONE ═══════ */
+    .dropzone {
+      border: 2px dashed rgba(255,255,255,0.12);
+      border-radius: 16px; padding: 48px 24px;
+      text-align: center; cursor: pointer;
+      background: rgba(255,255,255,0.02);
+      transition: all 0.3s; margin-bottom: 16px;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--cerulean);
+      background: rgba(0,132,212,0.06);
+    }
+    .dropzone .dz-icon { font-size: 40px; margin-bottom: 12px; display: block; opacity: 0.6; }
+    .dropzone h4 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+    .dropzone p { font-size: 12px; color: var(--text-secondary); font-weight: 300; }
+    .dropzone .sub { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; }
 
-/* ═══════════ WARNING BANNER ═══════════ */
-.warn-banner {
-  display: none; align-items: flex-start; gap: 10px;
-  padding: 14px 18px; margin-bottom: 16px;
-  background: #fffbeb; border: 1px solid #fcd34d; border-radius: var(--radius);
-  font-size: 12.5px; color: #92400e; line-height: 1.5;
-}
-.warn-banner.visible { display: flex; }
-.warn-banner .warn-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .file-loaded {
+      border: 1px solid rgba(0,179,136,0.3);
+      border-radius: 14px; padding: 14px 18px;
+      background: rgba(0,179,136,0.08);
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 16px;
+    }
+    .file-loaded .fl-icon { font-size: 24px; flex-shrink: 0; }
+    .file-loaded .fl-info { flex: 1; min-width: 0; }
+    .file-loaded .fl-name { font-size: 13px; font-weight: 500; }
+    .file-loaded .fl-meta { font-size: 11px; color: var(--menthe); font-weight: 300; }
+    .file-loaded .fl-actions { display: flex; gap: 6px; }
 
-/* ═══════════ FORM ═══════════ */
-.flabel { display: block; font-size: 12px; font-weight: 600; color: var(--ink2); margin-bottom: 6px; }
-.finput, .ftextarea {
-  width: 100%; padding: 10px 14px;
-  border: 1.5px solid var(--border); border-radius: var(--radius);
-  background: #fff; font-family: inherit; font-size: 13px; color: var(--ink);
-  outline: none; transition: border-color var(--transition), box-shadow var(--transition);
-}
-.finput:focus, .ftextarea:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(37,99,235,.1);
-}
-.ftextarea { resize: vertical; min-height: 76px; }
-.fhint { font-size: 11px; color: var(--ink3); margin-top: 4px; }
-.fgroup { margin-bottom: 16px; }
-.fgroup:last-child { margin-bottom: 0; }
-.finput.missing, .ftextarea.missing {
-  border-color: var(--accent); background: var(--accent-light);
-}
+    /* ═══════ PROGRESS ═══════ */
+    .progress-wrap {
+      width: 100%; height: 4px; background: rgba(255,255,255,0.06);
+      border-radius: 2px; margin: 12px 0; overflow: hidden;
+      display: none;
+    }
+    .progress-wrap.active { display: block; }
+    .progress-fill {
+      height: 100%; border-radius: 2px; width: 0%;
+      background: linear-gradient(90deg, var(--cerulean), var(--lavande));
+      transition: width 0.5s ease;
+    }
+    .status-msg { font-size: 12px; color: var(--text-tertiary); min-height: 18px; margin-top: 6px; font-weight: 300; }
 
-/* ═══════════ BUTTONS ═══════════ */
-.btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 9px 18px; border: 1.5px solid var(--border); border-radius: var(--radius);
-  background: #fff; font-family: inherit; font-size: 12.5px; font-weight: 600;
-  color: var(--ink); cursor: pointer; text-decoration: none;
-  transition: all var(--transition); white-space: nowrap;
-}
-.btn:hover { background: var(--surface-alt); border-color: #ccc; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-.btn:active { transform: translateY(0); }
-.btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
-.btn.primary { background: var(--blue); border-color: #1d4ed8; color: #fff; }
-.btn.primary:hover { background: #3b82f6; }
-.btn.primary:disabled { background: var(--blue-muted); border-color: var(--blue-muted); }
-.btn.sm { padding: 6px 12px; font-size: 11.5px; border-radius: 8px; }
-.btn.danger { background: var(--accent-light); border-color: #fca5a5; color: var(--danger); }
-.btn.success { background: var(--green-light); border-color: var(--green-border); color: var(--green); }
+    /* ═══════ QUESTIONNAIRE ═══════ */
+    .qs {
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; margin-bottom: 8px;
+      overflow: hidden; transition: all 0.2s;
+    }
+    .qs:hover { border-color: rgba(255,255,255,0.12); }
+    .qh {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; cursor: pointer;
+      background: rgba(255,255,255,0.02);
+      transition: background 0.2s;
+    }
+    .qh:hover { background: rgba(255,255,255,0.04); }
+    .qnum {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 500; font-size: 11px; flex-shrink: 0;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      color: var(--text-tertiary); background: rgba(255,255,255,0.03);
+      transition: all 0.3s;
+    }
+    .qnum.filled { background: var(--menthe); border-color: var(--menthe); color: #fff; }
+    .qnum.warn { background: var(--ocre); border-color: var(--ocre); color: #fff; }
+    .qtitle { font-size: 13px; font-weight: 400; color: var(--blanc); }
+    .qsub { font-size: 11px; color: var(--text-tertiary); font-weight: 300; }
+    .qchev { margin-left: auto; font-size: 10px; color: var(--text-tertiary); transition: transform 0.2s; }
+    .qbody { padding: 0 16px; max-height: 0; overflow: hidden; transition: all 0.3s ease; }
+    .qbody.open { max-height: 300px; padding: 14px 16px; border-top: 1px solid rgba(255,255,255,0.04); }
 
-.nav-row {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border-light);
-}
+    /* ═══════ DELIVERABLES TABS ═══════ */
+    .del-tabs {
+      display: flex; gap: 4px; padding: 4px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px; margin-bottom: 0;
+    }
+    .del-tab {
+      flex: 1; padding: 10px 16px;
+      border: none; background: transparent;
+      font-family: inherit; font-size: 12px; font-weight: 400;
+      color: var(--text-tertiary); cursor: pointer;
+      border-radius: 10px; transition: all 0.2s;
+      text-align: center;
+    }
+    .del-tab:hover { background: rgba(255,255,255,0.04); color: var(--text-secondary); }
+    .del-tab.active { background: var(--cerulean); color: #fff; }
+    .del-pane { display: none; padding: 20px; }
+    .del-pane.visible { display: block; }
 
-/* ═══════════ CONFIG GRID ═══════════ */
-.config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 640px) { .config-grid { grid-template-columns: 1fr; } }
+    .output-bar {
+      display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 12px;
+    }
+    .output-frame {
+      width: 100%; min-height: 450px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; background: #fff;
+    }
 
-/* ═══════════ AGENT GRID ═══════════ */
-.agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-.agent-card {
-  padding: 14px; border: 1.5px solid var(--border); border-radius: var(--radius);
-  background: var(--surface-alt); transition: all var(--transition);
-  position: relative; overflow: hidden;
-}
-.agent-card:hover { border-color: #bbb; }
-.agent-card.loaded {
-  border-color: var(--green-border); background: var(--green-light);
-}
-.agent-card.loaded::after {
-  content: '✓'; position: absolute; top: 8px; right: 10px;
-  font-size: 14px; font-weight: 800; color: var(--green);
-}
-.agent-icon {
-  width: 34px; height: 34px; border-radius: 8px;
-  display: grid; place-items: center;
-  font-weight: 800; font-size: 13px;
-  background: var(--blue-light); color: var(--navy); margin-bottom: 8px;
-}
-.agent-card.loaded .agent-icon { background: #d1fae5; color: var(--green); }
-.agent-name { font-size: 12px; font-weight: 700; }
-.agent-status {
-  font-size: 10.5px; color: var(--ink3); margin-top: 3px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.agent-card.loaded .agent-status { color: var(--green); }
+    /* ═══════ NAV ROW ═══════ */
+    .nav-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 24px; padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
 
-/* ═══════════ METHOD TOGGLE ═══════════ */
-.method-toggle {
-  display: inline-flex; border: 1.5px solid var(--border); border-radius: var(--radius);
-  overflow: hidden; margin-bottom: 20px;
-}
-.method-btn {
-  padding: 10px 20px; border: none; background: #fff;
-  font-family: inherit; font-size: 12.5px; font-weight: 600; color: var(--ink2);
-  cursor: pointer; transition: all var(--transition);
-}
-.method-btn + .method-btn { border-left: 1.5px solid var(--border); }
-.method-btn.active { background: var(--blue); color: #fff; }
-.method-btn:hover:not(.active) { background: var(--surface-alt); }
+    /* ═══════ CONFIG OVERLAY ═══════ */
+    .config-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      display: none;
+    }
+    .config-overlay.open { display: block; }
+    .config-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0,13,46,0.6);
+      backdrop-filter: blur(4px);
+    }
+    .config-panel {
+      position: absolute; top: 0; right: 0; bottom: 0;
+      width: 480px; max-width: 92%;
+      background: var(--bleu-deep);
+      border-left: 1px solid rgba(255,255,255,0.1);
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    .config-panel-hd {
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .config-panel-hd h2 { font-size: 16px; font-weight: 500; }
+    .btn-close-cfg {
+      width: 32px; height: 32px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      font-size: 14px; color: var(--text-tertiary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-close-cfg:hover { background: rgba(255,255,255,0.08); color: var(--blanc); }
+    .config-panel-bd { padding: 20px 24px; flex: 1; }
+    .cfg-section { margin-bottom: 28px; }
+    .cfg-section-title {
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--cerulean); margin-bottom: 14px;
+    }
 
-/* ─── Audio Zone ─── */
-.audio-zone {
-  border: 2px dashed var(--border); border-radius: var(--radius-lg);
-  padding: 32px; text-align: center; margin-bottom: 18px;
-  cursor: pointer; transition: all var(--transition);
-}
-.audio-zone:hover { border-color: var(--blue); background: var(--blue-light); }
-.audio-zone .az-icon { font-size: 36px; display: block; margin-bottom: 10px; }
-.audio-zone p { font-size: 13px; color: var(--ink2); }
-.audio-zone .sub { font-size: 11px; color: var(--ink3); }
+    /* ═══════ NOTE / WARN BOX ═══════ */
+    .note-box {
+      background: rgba(0,132,212,0.08); border: 1px solid rgba(0,132,212,0.2);
+      border-radius: 10px; padding: 12px 16px;
+      font-size: 12px; color: var(--bleu-horizon); font-weight: 300;
+    }
+    .warn-box {
+      background: rgba(220,88,42,0.08); border: 1px solid rgba(220,88,42,0.2);
+      border-radius: 10px; padding: 12px 16px;
+      font-size: 12px; color: var(--ocre); font-weight: 400;
+      margin-bottom: 16px;
+    }
 
-.progress-wrap {
-  width: 100%; height: 6px; background: #f0f1f5;
-  border-radius: 3px; margin: 12px 0; overflow: hidden; display: none;
-}
-.progress-wrap.active { display: block; }
-.progress-fill {
-  height: 100%; background: var(--blue); border-radius: 3px;
-  width: 0%; transition: width .6s ease;
-}
-.status-msg { font-size: 12px; color: var(--ink3); min-height: 18px; margin-top: 6px; }
+    /* ═══════ TOAST ═══════ */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--menthe); color: var(--bleu-abyss);
+      padding: 10px 24px; border-radius: 2rem;
+      font-size: 12px; font-weight: 500;
+      display: none; z-index: 999;
+      box-shadow: 0 4px 20px rgba(0,179,136,0.3);
+    }
+    .toast.show { display: block; animation: toastIn 0.3s ease; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
-/* ─── Question Sections ─── */
-.qs {
-  border: 1.5px solid var(--border); border-radius: var(--radius);
-  margin-bottom: 10px; overflow: hidden;
-  transition: border-color var(--transition);
-}
-.qs:hover { border-color: #ccc; }
-.qh {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; background: var(--surface-alt); cursor: pointer;
-  transition: background var(--transition);
-}
-.qh:hover { background: #eef0f4; }
-.qnum {
-  width: 28px; height: 28px; border-radius: 50%;
-  display: grid; place-items: center;
-  font-weight: 700; font-size: 11px;
-  background: #fff; border: 2px solid var(--border); color: var(--ink3);
-  transition: all var(--transition); flex-shrink: 0;
-}
-.qnum.filled { background: var(--green); border-color: var(--green); color: #fff; }
-.qnum.warn { background: var(--accent); border-color: var(--accent); color: #fff; }
-.qtitle { font-size: 13px; font-weight: 600; }
-.qsub { font-size: 11px; color: var(--ink3); }
-.qchev {
-  margin-left: auto; font-size: 10px; color: var(--ink3);
-  transition: transform var(--transition);
-}
-.qchev.open { transform: rotate(180deg); }
-.qbody { padding: 14px 16px; border-top: 1px solid var(--border-light); display: none; }
-.qbody.open { display: block; }
+    /* ═══════ GENERATION STATUS ═══════ */
+    .gen-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; font-size: 13px; font-weight: 300;
+    }
+    .gen-item .gi-label { font-weight: 400; min-width: 160px; }
+    .gen-item .gi-status { color: var(--text-tertiary); }
+    .gen-item .gi-status.pending { color: var(--cerulean); }
+    .gen-item .gi-status.done { color: var(--menthe); }
+    .gen-item .gi-status.error { color: var(--ocre); }
 
-/* ═══════════ DELIVERABLES ═══════════ */
-.del-tabs { display: flex; border-bottom: 2px solid var(--border); }
-.del-tab {
-  padding: 12px 24px; border: none; background: none;
-  font-family: inherit; font-size: 13px; font-weight: 600;
-  color: var(--ink3); cursor: pointer; position: relative;
-  transition: color var(--transition);
-}
-.del-tab:hover { color: var(--ink2); }
-.del-tab.active { color: var(--navy); }
-.del-tab .dbar {
-  position: absolute; bottom: -2px; left: 0; right: 0;
-  height: 2px; background: transparent; transition: background var(--transition);
-}
-.del-tab.active .dbar { background: var(--blue); }
-.del-pane { display: none; }
-.del-pane.visible { display: block; }
-.del-content { padding: 20px; }
-.output-bar { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 12px; }
+    .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(0,132,212,0.2);
+      border-top-color: var(--cerulean);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ═══════════ TOAST ═══════════ */
-.toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
-  background: var(--ink); color: #fff;
-  padding: 10px 24px; border-radius: 99px;
-  font-size: 12.5px; font-weight: 600;
-  opacity: 0; pointer-events: none;
-  transition: all .3s ease; z-index: 999;
-  box-shadow: var(--shadow-lg);
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    /* ═══════ GRADIENT SEPARATOR ═══════ */
+    .gradient-line {
+      height: 2px; border-radius: 1px;
+      background: linear-gradient(90deg, var(--cerulean), var(--ambre), var(--menthe));
+      margin: 2rem 0;
+      opacity: 0.5;
+    }
 
-/* ═══════════ HELPERS ═══════════ */
-.gap8 { display: flex; gap: 8px; align-items: center; }
-.mt12 { margin-top: 12px; }
-.note-box {
-  background: var(--blue-light); border: 1px solid #bfdbfe; border-radius: var(--radius);
-  padding: 14px 16px; font-size: 12.5px; color: var(--navy);
-}
-.mono { font-family: 'JetBrains Mono', monospace; }
+    /* ═══════ RESPONSIVE ═══════ */
+    @media (max-width: 768px) {
+      nav { padding: 0 1rem; }
+      .stepper { padding: 0 1rem; overflow-x: auto; }
+      .main { padding: 130px 1rem 3rem; }
+      .step-tab { padding: 0 14px; font-size: 12px; }
+      .config-panel { width: 100%; max-width: 100%; }
+      .del-tabs { flex-direction: column; }
+    }
 
-/* ─── Spinner ─── */
-@keyframes spin { to { transform: rotate(360deg); } }
-.spinner {
-  display: inline-block; width: 14px; height: 14px;
-  border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
-  border-radius: 50%; animation: spin .6s linear infinite;
-  vertical-align: middle;
-}
-.spinner.dark { border-color: rgba(0,0,0,.1); border-top-color: var(--blue); }
+    /* ═══════ SCROLLBAR ═══════ */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-/* ─── Gen dots ─── */
-.gen-dots span {
-  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  background: var(--blue); margin: 0 3px; opacity: .3;
-  animation: dotPulse 1.4s infinite ease-in-out;
-}
-.gen-dots span:nth-child(2) { animation-delay: .2s; }
-.gen-dots span:nth-child(3) { animation-delay: .4s; }
-@keyframes dotPulse {
-  0%, 80%, 100% { opacity: .3; transform: scale(.8); }
-  40% { opacity: 1; transform: scale(1); }
-}
-</style>
+    /* ═══════ AGENT CARDS ═══════ */
+    .agent-grid { display: grid; gap: 8px; }
+    .agent-card {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 14px; border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: all 0.2s; flex-wrap: wrap;
+    }
+    .agent-card:hover { border-color: rgba(255,255,255,0.12); }
+    .agent-card.active { border-color: rgba(0,179,136,0.3); background: rgba(0,179,136,0.06); }
+    .agent-row { display: flex; align-items: center; gap: 12px; width: 100%; }
+    .agent-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 500; font-size: 12px; flex-shrink: 0;
+      background: rgba(0,132,212,0.15); color: var(--cerulean);
+    }
+    .agent-card.active .agent-icon { background: rgba(0,179,136,0.15); color: var(--menthe); }
+    .agent-info { flex: 1; min-width: 0; }
+    .agent-name { font-size: 12px; font-weight: 500; color: var(--blanc); }
+    .agent-role { font-size: 10px; color: var(--text-tertiary); font-weight: 300; }
+    .agent-card.active .agent-role { color: var(--menthe); }
+    .agent-toggle {
+      width: 36px; height: 20px; border-radius: 10px; border: none;
+      background: rgba(255,255,255,0.1); cursor: pointer;
+      position: relative; transition: background 0.2s; flex-shrink: 0;
+    }
+    .agent-toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: rgba(255,255,255,0.4); transition: all 0.2s;
+    }
+    .agent-toggle.on { background: var(--menthe); }
+    .agent-toggle.on::after { left: 19px; background: #fff; }
+    .agent-edit-btn {
+      font-size: 11px; padding: 4px 8px; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04);
+      color: var(--text-tertiary); cursor: pointer; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .agent-edit-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-secondary); }
+    .agent-editor {
+      width: 100%; display: none;
+    }
+    .agent-editor.open { display: block; margin-top: 6px; }
+    .agent-editor textarea {
+      width: 100%; min-height: 90px; padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+      background: rgba(255,255,255,0.03); color: var(--text-secondary);
+      font-family: inherit; font-size: 11px; font-weight: 300;
+      line-height: 1.5; resize: vertical; outline: none;
+    }
+    .agent-editor textarea:focus {
+      border-color: var(--cerulean); background: rgba(255,255,255,0.05);
+    }
+
+    /* helpers */
+    .gap8 { display: flex; gap: 8px; align-items: center; }
+    .mt12 { margin-top: 12px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+  </style>
 </head>
-
 <body>
-<div class="app">
 
-  <!-- ═══════════ TOPBAR ═══════════ -->
-  <div class="topbar">
-    <div class="logo">
-      <span class="logo-icon">574</span>
-      Cadrage Express <span class="sub">Innovation Centre-Ouest</span>
+<!-- ═══════ NAV ═══════ -->
+<nav>
+  <div class="nav-brand">
+    <div class="logo-icon">CE</div>
+    <h1>Cadrage Express <span class="version">v7</span></h1>
+  </div>
+  <div class="nav-right">
+    <div class="nav-status">
+      <span class="status-dot" id="topDot"></span>
+      <span id="topStatusText">Non configuré</span>
     </div>
-    <span class="version">v5.0</span>
+    <button class="btn-config" onclick="openConfig()" title="Configuration">⚙</button>
+  </div>
+</nav>
+
+<!-- ═══════ STEPPER ═══════ -->
+<div class="stepper">
+  <button class="step-tab active" id="stab1" onclick="goStep(1)">
+    <span class="step-num" id="snum1">1</span> Recueil
+  </button>
+  <span class="step-connector">›</span>
+  <button class="step-tab" id="stab2" onclick="goStep(2)">
+    <span class="step-num" id="snum2">2</span> Livrables
+  </button>
+</div>
+
+<!-- ═══════ MAIN ═══════ -->
+<div class="main">
+
+  <!-- ══ STEP 1 ══ -->
+  <div class="panel visible" id="panel1">
+
+    <div id="cfgWarning" class="warn-box" style="display:none;">
+      ⚠ <strong>Configuration requise</strong> — Ouvrez le panneau ⚙ Configuration pour saisir votre clé API Anthropic.
+    </div>
+
+    <!-- Input Mode -->
+    <div class="card">
+      <div class="card-hd">
+        <h3>📥 Source du besoin</h3>
+      </div>
+      <div class="card-bd">
+        <div class="method-toggle">
+          <button class="method-btn active" id="mbPdf" onclick="switchMethod('pdf')">📄 PDF / Fichier texte</button>
+          <button class="method-btn" id="mbPaste" onclick="switchMethod('paste')">📋 Coller du texte</button>
+          <button class="method-btn" id="mbManual" onclick="switchMethod('manual')">✏ Saisie manuelle</button>
+        </div>
+
+        <!-- PDF/Text Zone -->
+        <div id="zonePdf">
+          <div id="pdfDropZone" class="dropzone" onclick="document.getElementById('filePicker').click()">
+            <span class="dz-icon">📄</span>
+            <h4>Déposez un fichier ici</h4>
+            <p>ou cliquez pour sélectionner</p>
+            <p class="sub">PDF de transcription, .txt, .md — Le texte sera extrait et analysé par Claude</p>
+          </div>
+          <input id="filePicker" type="file" style="display:none" accept=".pdf,.txt,.md,.text" onchange="handleFileSelect(this)" />
+
+          <div id="fileLoaded" class="file-loaded" style="display:none;">
+            <span class="fl-icon">📄</span>
+            <div class="fl-info">
+              <div class="fl-name" id="loadedFileName">fichier.pdf</div>
+              <div class="fl-meta" id="loadedFileMeta">Prêt pour analyse</div>
+            </div>
+            <div class="fl-actions">
+              <button class="btn sm" onclick="document.getElementById('filePicker').click()">🔄 Changer</button>
+              <button class="btn sm danger" onclick="clearFile()">✕ Retirer</button>
+            </div>
+          </div>
+
+          <div class="progress-wrap" id="fProg">
+            <div class="progress-fill" id="fProgFill"></div>
+          </div>
+          <div class="status-msg" id="fStatus"></div>
+
+          <div class="gap8 mt12">
+            <button class="btn primary" id="analyzeBtn" disabled onclick="runAnalysis()">▶ Analyser et remplir le questionnaire</button>
+          </div>
+        </div>
+
+        <!-- Paste Zone -->
+        <div id="zonePaste" style="display:none;">
+          <div class="fgroup">
+            <label class="flabel">Collez la transcription ou le compte-rendu</label>
+            <textarea class="ftextarea" id="pasteArea" placeholder="Collez ici le texte brut de la transcription, du CR de réunion, de l'expression de besoin..." style="min-height: 160px;"></textarea>
+          </div>
+          <div class="gap8 mt12">
+            <button class="btn primary" onclick="runAnalysisFromPaste()">▶ Analyser et remplir le questionnaire</button>
+          </div>
+        </div>
+
+        <!-- Manual Zone -->
+        <div id="zoneManual" style="display:none;">
+          <div class="note-box">✏ Remplissez directement le questionnaire ci-dessous.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Questionnaire -->
+    <div class="card">
+      <div class="card-hd">
+        <h3>📋 Questionnaire de cadrage systémique</h3>
+        <span class="badge" id="qBadge">0 / 7</span>
+      </div>
+      <div class="card-bd" id="qBody"></div>
+    </div>
+
+    <div class="nav-row">
+      <div></div>
+      <button class="btn accent" id="genBtn" onclick="generateCadrage()">
+        Générer les livrables →
+      </button>
+    </div>
   </div>
 
-  <!-- ═══════════ STEPPER ═══════════ -->
-  <div class="stepper-bar">
-    <button class="step-tab active" id="stab1" onclick="goStep(1)">
-      <span class="step-num" id="snum1">1</span> Configuration
-      <span class="bar"></span>
-    </button>
-    <span class="step-connector">›</span>
-    <button class="step-tab" id="stab2" onclick="goStep(2)">
-      <span class="step-num" id="snum2">2</span> Recueil des besoins
-      <span class="bar"></span>
-    </button>
-    <span class="step-connector">›</span>
-    <button class="step-tab" id="stab3" onclick="goStep(3)">
-      <span class="step-num" id="snum3">3</span> Livrables
-      <span class="bar"></span>
-    </button>
+  <!-- ══ STEP 2 ══ -->
+  <div class="panel" id="panel2">
+
+    <div class="card" id="genStatusCard" style="display:none;">
+      <div class="card-hd">
+        <h3>⚙ Génération en cours</h3>
+        <span class="badge" id="genStatusBadge">0 / 3</span>
+      </div>
+      <div class="card-bd">
+        <div class="gen-item"><span class="gi-label">Synthèse structurée</span><span class="gi-status" id="genStatusSynth">En attente</span></div>
+        <div class="gen-item"><span class="gi-label">Maquette applicative</span><span class="gi-status" id="genStatusMock">En attente</span></div>
+        <div class="gen-item"><span class="gi-label">Pré-cadrage technique</span><span class="gi-status" id="genStatusCadrage">En attente</span></div>
+      </div>
+    </div>
+
+    <div class="card" id="delCard">
+      <div class="del-tabs">
+        <button class="del-tab active" id="dtSynth" onclick="switchDel('synth')">📊 Synthèse</button>
+        <button class="del-tab" id="dtMock" onclick="switchDel('mock')">🖼 Maquette</button>
+        <button class="del-tab" id="dtCadrage" onclick="switchDel('cadrage')">📝 Pré-cadrage</button>
+      </div>
+
+      <div class="del-pane visible" id="dpSynth">
+        <div class="output-bar">
+          <button class="btn sm" onclick="downloadHtml(lastSynthHtml, 'cadrage_synthese.html')">💾 Télécharger</button>
+        </div>
+        <iframe id="synthFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+      </div>
+      <div class="del-pane" id="dpMock">
+        <div class="output-bar">
+          <button class="btn sm" onclick="downloadHtml(lastMockHtml, 'cadrage_maquette.html')">💾 Télécharger</button>
+        </div>
+        <iframe id="mockFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+      </div>
+      <div class="del-pane" id="dpCadrage">
+        <div class="output-bar">
+          <button class="btn sm" onclick="downloadHtml(lastCadrageHtml, 'cadrage_pre_cdc.html')">💾 Télécharger</button>
+        </div>
+        <iframe id="cadrageFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn" onclick="goStep(1)">← Modifier le questionnaire</button>
+      <button class="btn accent" onclick="generateCadrage()">🔄 Régénérer</button>
+    </div>
   </div>
 
-  <!-- ═══════════ MAIN ═══════════ -->
-  <div class="main-area" id="mainArea">
+</div>
 
-    <!-- ╔══════════════════════════════════════════╗
-         ║  STEP 1 — CONFIGURATION                  ║
-         ╚══════════════════════════════════════════╝ -->
-    <div class="step-panel visible" id="panel1">
-
-      <div class="card">
-        <div class="card-hd">
-          <h3>🔑 Connexion API</h3>
-          <span class="badge" id="apiBadge">Non configuré</span>
-        </div>
-        <div class="card-bd">
-          <div class="config-grid">
-            <div class="fgroup">
-              <label class="flabel">URL de l'API</label>
-              <input class="finput" id="cfgUrl" type="text" value="https://api.openai.com/v1">
-              <div class="fhint">Base URL OpenAI. Les endpoints /chat/completions et /audio/transcriptions sont ajoutés auto.</div>
-            </div>
-            <div class="fgroup">
-              <label class="flabel">Modèle Chat</label>
-              <input class="finput" id="cfgModel" type="text" value="gpt-4o">
-            </div>
-            <div class="fgroup">
-              <label class="flabel">Clé API</label>
-              <div class="gap8">
-                <input class="finput" id="cfgKey" type="password" placeholder="sk-…" style="flex:1;" oninput="updateCfg()">
-                <button class="btn sm" onclick="toggleKey()" title="Afficher/Masquer">👁</button>
-              </div>
-            </div>
-            <div class="fgroup">
-              <label class="flabel">Modèle Whisper</label>
-              <input class="finput" id="cfgWhisper" type="text" value="whisper-1">
-            </div>
-            <div class="fgroup">
-              <label class="flabel">Max tokens (réponse)</label>
-              <input class="finput" id="cfgMaxTokens" type="text" value="16384">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-hd">
-          <h3>🤖 Agents Virtuels — Fichiers JSON</h3>
-          <span class="badge" id="agentBadge">0 / 5 chargés</span>
-          <span style="margin-left:auto;"></span>
-          <button class="btn sm" onclick="pickAgentFolder()">📂 Charger un dossier…</button>
-          <button class="btn sm" onclick="pickAllJson()">📄 Charger des fichiers…</button>
-          <input id="folderPicker" type="file" webkitdirectory directory multiple style="display:none">
-          <input id="filePicker" type="file" multiple accept=".json" style="display:none">
-        </div>
-        <div class="card-bd">
-          <div class="warn-banner" id="agentWarn">
-            <span class="warn-icon">⚠️</span>
-            <div>
-              <strong>Agents manquants.</strong> L'outil peut fonctionner sans tous les agents,
-              mais les livrables seront moins riches. Chargez les fichiers JSON manquants pour une analyse complète.
-            </div>
-          </div>
-          <div class="agent-grid" id="agentGrid"></div>
-        </div>
-      </div>
-
-      <div class="nav-row">
-        <div></div>
-        <button class="btn primary" id="toStep2" onclick="goStep(2)">Suivant — Recueil des besoins →</button>
-      </div>
+<!-- ═══════ CONFIG OVERLAY ═══════ -->
+<div class="config-overlay" id="configOverlay">
+  <div class="config-backdrop" onclick="closeConfig()"></div>
+  <div class="config-panel">
+    <div class="config-panel-hd">
+      <h2>⚙ Configuration</h2>
+      <button class="btn-close-cfg" onclick="closeConfig()">✕</button>
     </div>
+    <div class="config-panel-bd">
 
-    <!-- ╔══════════════════════════════════════════╗
-         ║  STEP 2 — RECUEIL DES BESOINS             ║
-         ╚══════════════════════════════════════════╝ -->
-    <div class="step-panel" id="panel2">
-
-      <div class="card">
-        <div class="card-hd">
-          <h3>🎙 Mode de recueil</h3>
+      <div class="cfg-section">
+        <div class="cfg-section-title">Connexion API Anthropic</div>
+        <div class="fgroup">
+          <label class="flabel">Clé API</label>
+          <div class="gap8">
+            <input class="finput" id="cfgKey" type="password" placeholder="sk-ant-..." style="flex:1;" oninput="updateCfg()" />
+            <button class="btn sm" onclick="toggleKey()">👁</button>
+          </div>
+          <div class="fhint">Votre clé API Anthropic (BYOK). Stockée uniquement en mémoire navigateur.</div>
         </div>
-        <div class="card-bd">
-          <div class="method-toggle">
-            <button class="method-btn active" id="mbAudio" onclick="switchMethod('audio')">🎙 Audio → Transcription IA</button>
-            <button class="method-btn" id="mbManual" onclick="switchMethod('manual')">✏️ Saisie manuelle</button>
+        <div class="grid-2">
+          <div class="fgroup">
+            <label class="flabel">Modèle</label>
+            <input class="finput" id="cfgModel" type="text" value="claude-sonnet-4-20250514" />
           </div>
-
-          <!-- Audio Zone -->
-          <div id="zoneAudio">
-            <div class="audio-zone" onclick="document.getElementById('audioPicker').click()">
-              <span class="az-icon">🎙</span>
-              <p>Chargez un fichier audio pour transcription automatique</p>
-              <p class="sub">Formats : mp3, wav, m4a, webm, mp4, ogg — Max 25 Mo</p>
-            </div>
-            <input id="audioPicker" type="file" accept=".mp3,.wav,.m4a,.webm,.ogg,.mp4" style="display:none">
-            <div id="audioInfo" style="display:none; margin-bottom:12px; font-size:12.5px; color:var(--ink2);"></div>
-
-            <div class="progress-wrap" id="aProg">
-              <div class="progress-fill" id="aProgFill"></div>
-            </div>
-            <div class="status-msg" id="aStatus"></div>
-
-            <div class="gap8 mt12">
-              <button class="btn primary" id="transcBtn" disabled onclick="runTranscription()">Transcrire & remplir le questionnaire</button>
-              <button class="btn danger" id="clearAudioBtn" style="display:none;" onclick="clearAudio()">Supprimer l'audio</button>
-            </div>
-          </div>
-
-          <!-- Manual Zone -->
-          <div id="zoneManual" style="display:none;">
-            <div class="note-box">✏️ Remplissez directement le questionnaire ci-dessous.</div>
+          <div class="fgroup">
+            <label class="flabel">Max tokens</label>
+            <input class="finput" id="cfgMaxTokens" type="text" value="8192" />
           </div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-hd">
-          <h3>📋 Questionnaire de cadrage systémique</h3>
-          <span class="badge" id="qBadge">0 / 7</span>
-        </div>
-        <div class="card-bd" id="qBody"></div>
+      <div class="cfg-section">
+        <div class="cfg-section-title">Agents Experts Virtuels <span class="badge" id="agentBadge" style="margin-left:6px;">5 / 5</span></div>
+        <div class="fhint" style="margin-bottom:12px;">Chaque agent apporte son expertise au cadrage. Activez/désactivez ou éditez les prompts.</div>
+        <div class="agent-grid" id="agentGrid"></div>
       </div>
 
-      <div class="nav-row">
-        <button class="btn" onclick="goStep(1)">← Configuration</button>
-        <button class="btn primary" id="genBtn" onclick="generateCadrage()">Générer les livrables →</button>
+      <div class="cfg-section">
+        <div class="cfg-section-title">Personnalisation</div>
+        <div class="fgroup">
+          <label class="flabel">Contexte métier additionnel (optionnel)</label>
+          <textarea class="ftextarea" id="cfgContext" placeholder="Ex: Contexte SNCF, direction TER, contraintes réseau interne..."></textarea>
+          <div class="fhint">Ajouté au prompt système pour contextualiser les livrables.</div>
+        </div>
       </div>
+
     </div>
-
-    <!-- ╔══════════════════════════════════════════╗
-         ║  STEP 3 — LIVRABLES                       ║
-         ╚══════════════════════════════════════════╝ -->
-    <div class="step-panel" id="panel3">
-
-      <!-- Loading Status -->
-      <div class="card" id="genStatusCard" style="display:none;">
-        <div class="card-hd">
-          <h3>⚙ Génération en cours</h3>
-          <span class="badge" id="genStatusBadge">0 / 2</span>
-        </div>
-        <div class="card-bd">
-          <div style="margin-bottom:10px;">
-            <strong>Synthèse :</strong> <span id="genStatusSynth">En attente…</span>
-          </div>
-          <div>
-            <strong>Maquette :</strong> <span id="genStatusMock">En attente…</span>
-          </div>
-          <div class="gen-dots" id="genDots" style="margin-top:12px;">
-            <span></span><span></span><span></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" id="delCard">
-        <div class="del-tabs">
-          <button class="del-tab active" id="dtSynth" onclick="switchDel('synth')">📊 Synthèse structurée <span class="dbar"></span></button>
-          <button class="del-tab" id="dtMock" onclick="switchDel('mock')">🖼 Maquette de l'appli <span class="dbar"></span></button>
-        </div>
-
-        <div class="del-pane visible" id="dpSynth">
-          <div class="del-content">
-            <div class="output-bar">
-              <button class="btn sm" onclick="copySynthesis()">📋 Copier HTML</button>
-            </div>
-            <iframe id="synthFrame" style="width:100%;min-height:440px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;" frameborder="0"></iframe>
-          </div>
-        </div>
-
-        <div class="del-pane" id="dpMock">
-          <div class="del-content">
-            <div class="output-bar">
-              <button class="btn sm" onclick="copyMockup()">📋 Copier HTML</button>
-              <button class="btn sm" onclick="exportMockupFile()">💾 Télécharger .html</button>
-            </div>
-            <iframe id="mockFrame" style="width:100%;min-height:440px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;" frameborder="0"></iframe>
-          </div>
-        </div>
-      </div>
-
-      <div class="nav-row">
-        <button class="btn" onclick="goStep(2)">← Modifier le questionnaire</button>
-        <button class="btn primary" onclick="generateCadrage()">🔄 Régénérer</button>
-      </div>
-    </div>
-
-  </div><!-- /main-area -->
-</div><!-- /app -->
+  </div>
+</div>
 
 <div class="toast" id="toast">✓ Copié !</div>
 
-
 <script>
-/* ═══════════════════════════════════════════════
-   GLOBAL STATE
-   ═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════ */
 let curStep = 1;
-let audioFile = null;
+let loadedFileText = '';
+let loadedFileName = '';
 let lastSynthHtml = '';
 let lastMockHtml = '';
+let lastCadrageHtml = '';
+let genDone = 0;
 
-const agents = { economist: null, growth: null, product: null, tech: null, ux: null };
 const agentDefs = [
-  { key: 'economist', label: 'Economist',          icon: '$' },
-  { key: 'growth',    label: 'Growth Analyst',      icon: 'G' },
-  { key: 'product',   label: 'Product Strategist',  icon: 'P' },
-  { key: 'tech',      label: 'Tech Lead',           icon: 'T' },
-  { key: 'ux',        label: 'UX Designer',         icon: 'U' },
+  {
+    key: 'economist',
+    label: 'Économiste',
+    icon: '$',
+    color: 'var(--ambre)',
+    enabled: true,
+    prompt: `Tu es un économiste spécialisé dans l'analyse coûts-bénéfices de projets d'innovation numérique dans le secteur ferroviaire et les grandes entreprises publiques.
+
+TON RÔLE :
+- Évaluer la viabilité économique du projet (ROI, TCO, payback period)
+- Identifier les coûts cachés (maintenance, formation, conduite du changement, dette technique)
+- Chiffrer les gains potentiels (productivité, réduction d'erreurs, temps économisé)
+- Comparer les scénarios Baseline / MVP / Scale avec des ordres de grandeur réalistes
+- Alerter sur les risques financiers et les dépendances budgétaires
+
+CONTRAINTES SNCF :
+- Budget innovation souvent contraint, besoin de quick wins pour débloquer les enveloppes
+- Distinction CAPEX/OPEX importante pour la gouvernance
+- Coûts internes (ETP) vs coûts externes (prestataires) à bien séparer
+- Penser au coût d'opportunité : que se passe-t-il si on ne fait rien ?`
+  },
+  {
+    key: 'growth',
+    label: 'Growth Analyst',
+    icon: 'G',
+    color: 'var(--menthe)',
+    enabled: true,
+    prompt: `Tu es un Growth Analyst spécialisé dans la mesure d'impact et l'adoption des outils numériques en entreprise.
+
+TON RÔLE :
+- Définir les KPIs pertinents pour mesurer le succès du projet
+- Identifier les leviers d'adoption et les freins potentiels
+- Proposer une stratégie de déploiement progressive (pilote → généralisation)
+- Estimer la volumétrie d'utilisateurs et les taux d'adoption réalistes
+- Concevoir les mécanismes de feedback et d'itération
+
+MÉTHODES :
+- Framework AARRR adapté aux outils internes (Acquisition → Activation → Rétention → Referral → Revenue/Impact)
+- Analyse des cohortes d'utilisateurs (early adopters, majorité, retardataires)
+- North Star Metric : quel indicateur unique résume la valeur créée ?
+- Boucles de croissance : comment chaque utilisateur satisfait en amène d'autres ?
+
+CONTEXTE SNCF :
+- Adoption souvent freinée par la multiplicité des outils existants
+- Importance du terrain : les agents en gare/atelier n'ont pas les mêmes usages que les cadres
+- Réseau de champions / ambassadeurs comme levier clé`
+  },
+  {
+    key: 'product',
+    label: 'Product Strategist',
+    icon: 'P',
+    color: 'var(--cerulean)',
+    enabled: true,
+    prompt: `Tu es un Product Strategist senior spécialisé dans la conception de produits numériques pour les grandes organisations.
+
+TON RÔLE :
+- Reformuler le besoin métier en vision produit claire (problem statement, value proposition)
+- Prioriser les fonctionnalités avec une matrice Impact/Effort
+- Définir le MVP minimal crédible vs les itérations futures
+- Identifier les hypothèses critiques à valider avant développement
+- Proposer un discovery plan (interviews, prototypage, tests)
+
+FRAMEWORKS :
+- Jobs-to-be-Done : quel "job" l'utilisateur essaie-t-il d'accomplir ?
+- Opportunity Solution Tree : problème → opportunités → solutions → expériences
+- RICE scoring pour la priorisation (Reach, Impact, Confidence, Effort)
+- Build-Measure-Learn pour les itérations
+
+POSTURE :
+- Challenger le besoin : est-ce le bon problème à résoudre ?
+- Penser "outcome" (résultat métier) plutôt que "output" (fonctionnalité)
+- Toujours revenir à l'utilisateur final et sa douleur quotidienne`
+  },
+  {
+    key: 'tech',
+    label: 'Tech Lead',
+    icon: 'T',
+    color: 'var(--lavande)',
+    enabled: true,
+    prompt: `Tu es un Tech Lead / Architecte SI expérimenté dans les systèmes d'information ferroviaires et les grandes DSI.
+
+TON RÔLE :
+- Évaluer la faisabilité technique et proposer des architectures adaptées
+- Identifier les intégrations SI nécessaires (APIs, référentiels, bases existantes)
+- Estimer la complexité technique et les délais réalistes
+- Alerter sur les contraintes d'infrastructure (réseau, hébergement, sécurité)
+- Proposer des choix technologiques pragmatiques (build vs buy vs configure)
+
+CONTRAINTES SNCF/DSI :
+- Environnement Windows dominant, navigateur parfois restreint
+- Réseau interne avec proxy, VPN, restrictions d'accès
+- Hébergement : cloud SNCF (Azure), on-premise, ou SaaS homologué
+- Référentiels : LDAP/AD pour l'authentification, HR pour les données agent
+- RGPD et politique de données SNCF stricte
+- Homologation sécurité obligatoire pour tout nouvel outil
+
+STACK TYPIQUE SNCF :
+- Frontend : React/Angular, ou Power Platform pour le low-code
+- Backend : .NET, Java, Node.js selon les équipes
+- Data : SQL Server, Power BI, Dataiku pour la data science
+- Intégration : API Management SNCF, ESB`
+  },
+  {
+    key: 'ux',
+    label: 'UX Designer',
+    icon: 'U',
+    color: 'var(--ocre)',
+    enabled: true,
+    prompt: `Tu es un UX Designer senior spécialisé dans les outils métier et les interfaces pour les agents de terrain.
+
+TON RÔLE :
+- Identifier les parcours utilisateurs clés et les points de friction
+- Proposer des principes d'interface adaptés au contexte d'usage
+- Anticiper les besoins d'accessibilité (RGAA) et d'ergonomie terrain
+- Définir les écrans principaux et la navigation
+- Alerter sur les pièges UX classiques des outils internes
+
+PRINCIPES :
+- Mobile-first pour les agents terrain, desktop-first pour les fonctions support
+- Complexité progressive : interface simple par défaut, options avancées accessibles
+- Feedback immédiat : l'utilisateur doit toujours savoir où il en est
+- Cohérence avec l'écosystème SNCF existant (charte, patterns connus)
+- Offline-first si usage en zone blanche (ateliers, voies)
+
+MÉTHODES :
+- Personas basés sur les vrais profils agents SNCF
+- User story mapping pour séquencer le développement
+- Tests d'utilisabilité rapides (5 secondes, guerilla testing)
+- Design system : réutiliser les composants existants avant d'en créer
+
+CONTEXTE SNCF :
+- Utilisateurs souvent non-technophiles, besoin de simplicité extrême
+- Contraintes matérielles : tablettes durcies, écrans de tailles variées
+- Importance de la formation et de l'onboarding intégré`
+  }
 ];
 
 const questionDefs = [
-  { id: 'q1', title: 'Projet — Demande initiale',         sub: 'Intitulé du projet ou de la demande',                ph: 'Nom ou intitulé court du projet…',                tag: 'input',    hint: 'Ex. « Optimiser le traitement des demandes »' },
-  { id: 'q2', title: 'Contexte — Origine de la demande',   sub: "Qu'est-ce qui a déclenché cette demande ?",          ph: "Décrivez l'élément déclencheur…",                 tag: 'textarea', hint: 'Événement, irritant, opportunité, contrainte.' },
-  { id: 'q3', title: 'Finalité — Objectif N+1',            sub: 'Vous voulez… dans quel but ?',                       ph: "Quel est l'objectif supérieur ?",                 tag: 'textarea', hint: 'Pour aboutir à quoi ?' },
-  { id: 'q4', title: 'Résultats attendus',                 sub: "À quoi saurez-vous que c'est atteint ?",            ph: 'Indicateurs de succès, résultats concrets…',      tag: 'textarea', hint: 'Mesures, critères, preuves, livrables.' },
-  { id: 'q5', title: 'Acteurs directement concernés',      sub: 'Qui est impacté ?',                                  ph: 'Personnes, équipes, services impactés…',          tag: 'textarea', hint: 'Utilisateurs finaux, opérationnels, managers.' },
-  { id: 'q6', title: 'Réseau intervenants',                sub: 'Alliés, opposants, décideurs…',                      ph: 'Alliés, opposants, décideurs…',                   tag: 'textarea', hint: 'Qui facilite ? Qui freine ? Qui arbitre ?' },
-  { id: 'q7', title: 'Enjeux spécifiques',                 sub: 'Gains / pertes, enjeux stratégiques…',               ph: 'Enjeux stratégiques, opérationnels…',             tag: 'textarea', hint: 'Risques, dépendances, contraintes.' },
+  { id:'q1', title:'Projet — Demande initiale',        sub:'Intitulé du projet ou de la demande',              ph:'Nom ou intitulé court du projet...',              tag:'input',    hint:'Ex. « Optimiser le traitement des demandes »' },
+  { id:'q2', title:'Contexte — Origine de la demande',  sub:'Qu\'est-ce qui a déclenché cette demande ?',       ph:'Décrivez l\'élément déclencheur...',               tag:'textarea', hint:'Événement, irritant, opportunité, contrainte.' },
+  { id:'q3', title:'Finalité — Objectif N+1',           sub:'Vous voulez… dans quel but ?',                     ph:'Quel est l\'objectif supérieur ?',                 tag:'textarea', hint:'Pour aboutir à quoi ?' },
+  { id:'q4', title:'Résultats attendus',                 sub:'À quoi saurez-vous que c\'est atteint ?',         ph:'Indicateurs de succès, résultats concrets...',     tag:'textarea', hint:'Mesures, critères, preuves, livrables.' },
+  { id:'q5', title:'Acteurs directement concernés',      sub:'Qui est impacté ?',                               ph:'Personnes, équipes, services impactés...',         tag:'textarea', hint:'Utilisateurs finaux, opérationnels, managers.' },
+  { id:'q6', title:'Réseau intervenants',                sub:'Alliés, opposants, décideurs…',                   ph:'Alliés, opposants, décideurs...',                  tag:'textarea', hint:'Qui facilite ? Qui freine ? Qui arbitre ?' },
+  { id:'q7', title:'Enjeux spécifiques',                 sub:'Gains / pertes, enjeux stratégiques…',            ph:'Enjeux stratégiques, opérationnels...',            tag:'textarea', hint:'Risques, dépendances, contraintes.' }
 ];
 
-/* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════
    INIT
-   ═══════════════════════════════════════════════ */
-renderAgentGrid();
+   ═══════════════════════════════════════ */
 renderQuestionnaire();
+renderAgentGrid();
 updateCfg();
-wireFilePickers();
+initDragDrop();
 
-/* ═══════════════════════════════════════════════
-   FILE PICKERS
-   ═══════════════════════════════════════════════ */
-function wireFilePickers() {
-  document.getElementById('filePicker').addEventListener('change', e => {
-    if (e.target.files.length) loadJsonFiles(e.target.files);
-    e.target.value = '';
-  });
-
-  document.getElementById('folderPicker').addEventListener('change', e => {
-    if (e.target.files.length) loadJsonFiles(e.target.files);
-    e.target.value = '';
-  });
-
-  document.getElementById('audioPicker').addEventListener('change', e => {
-    if (e.target.files.length) setAudioFile(e.target.files[0]);
-  });
-}
-
-function pickAllJson() { document.getElementById('filePicker').click(); }
-function pickAgentFolder() { document.getElementById('folderPicker').click(); }
-
-function loadJsonFiles(fileList) {
-  Array.from(fileList).forEach(file => {
-    if (!file.name.toLowerCase().endsWith('.json')) return;
-    const key = guessAgentKey(file.name);
-    if (!key) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      trySetAgent(key, ev.target.result, file.name);
-      updateCfg();
-    };
-    reader.readAsText(file);
-  });
-}
-
-function trySetAgent(key, jsonText, fileName) {
-  const st = document.getElementById('as_' + key);
-  const card = document.getElementById('ac_' + key);
-  try {
-    jsonText = jsonText.replace(/^\uFEFF/, '').trim();
-    const data = JSON.parse(jsonText);
-    agents[key] = data;
-    if (card) card.classList.add('loaded');
-    if (st) st.textContent = '✓ ' + (fileName.length > 22 ? fileName.slice(0, 19) + '…' : fileName);
-  } catch (ex) {
-    agents[key] = null;
-    if (card) card.classList.remove('loaded');
-    if (st) st.textContent = '✗ ' + (ex.message || 'Erreur').slice(0, 28);
-  }
-}
-
-function guessAgentKey(s) {
-  s = s.toLowerCase();
-  if (s.includes('econom')) return 'economist';
-  if (s.includes('growth')) return 'growth';
-  if (s.includes('product') || s.includes('strateg')) return 'product';
-  if (s.includes('tech') || s.includes('lead') || s.includes('dev')) return 'tech';
-  if (s.includes('ux') || s.includes('design')) return 'ux';
-  return null;
-}
-
-/* ═══════════════════════════════════════════════
-   STEPPER
-   ═══════════════════════════════════════════════ */
-function goStep(n) {
-  curStep = n;
-  const tabs = [document.getElementById('stab1'), document.getElementById('stab2'), document.getElementById('stab3')];
-  tabs.forEach((tab, i) => {
-    tab.className = 'step-tab' + (i + 1 === n ? ' active' : (i + 1 < n ? ' done' : ''));
-  });
-  for (let j = 1; j <= 3; j++) {
-    document.getElementById('panel' + j).className = j === n ? 'step-panel visible' : 'step-panel';
-  }
-  document.getElementById('mainArea').scrollTop = 0;
-}
-
-/* ═══════════════════════════════════════════════
-   STEP 1: CONFIG
-   ═══════════════════════════════════════════════ */
-function toggleKey() {
-  const el = document.getElementById('cfgKey');
-  el.type = el.type === 'password' ? 'text' : 'password';
-}
-
-function updateCfg() {
-  const hasKey = document.getElementById('cfgKey').value.trim().length > 0;
-  const badge = document.getElementById('apiBadge');
-  badge.textContent = hasKey ? '✓ Clé détectée' : 'Non configuré';
-  badge.className = 'badge' + (hasKey ? ' ok' : '');
-
-  let cnt = 0;
-  for (const k in agents) { if (agents[k]) cnt++; }
-  const ab = document.getElementById('agentBadge');
-  ab.textContent = cnt + ' / 5 chargés';
-  ab.className = 'badge' + (cnt === 5 ? ' ok' : cnt > 0 ? ' warn' : '');
-
-  // Show/hide warning
-  const warn = document.getElementById('agentWarn');
-  if (cnt > 0 && cnt < 5) {
-    const missing = agentDefs.filter(d => !agents[d.key]).map(d => d.label);
-    warn.querySelector('div').innerHTML = `<strong>Agents manquants : ${missing.join(', ')}.</strong> L'outil peut fonctionner sans tous les agents, mais les livrables seront moins riches et précis.`;
-    warn.classList.add('visible');
-  } else {
-    warn.classList.remove('visible');
-  }
-
-  // Enable step 2 if key present (agents optional)
-  const btn = document.getElementById('toStep2');
-  btn.disabled = !hasKey;
-  if (hasKey && cnt === 0) {
-    btn.textContent = 'Suivant (sans agents) →';
-  } else if (hasKey && cnt < 5) {
-    btn.textContent = `Suivant (${cnt}/5 agents) →`;
-  } else {
-    btn.textContent = 'Suivant — Recueil des besoins →';
-  }
-}
-
-/* ─── Agent Grid ─── */
+/* ═══════════════════════════════════════
+   AGENTS
+   ═══════════════════════════════════════ */
 function renderAgentGrid() {
   const grid = document.getElementById('agentGrid');
-  grid.innerHTML = agentDefs.map(d => `
-    <div class="agent-card" id="ac_${d.key}">
-      <div class="agent-icon">${d.icon}</div>
-      <div class="agent-name">${esc(d.label)}</div>
-      <div class="agent-status" id="as_${d.key}">Non chargé</div>
-      <div style="margin-top:8px;">
-        <button class="btn sm" onclick="pickOneJson('${d.key}')">Charger</button>
+  grid.innerHTML = agentDefs.map(a => `
+    <div class="agent-card ${a.enabled ? 'active' : ''}" id="ac_${a.key}">
+      <div class="agent-row">
+        <div class="agent-icon" style="${a.enabled ? '' : 'opacity:0.4'}">${a.icon}</div>
+        <div class="agent-info">
+          <div class="agent-name">${a.label}</div>
+          <div class="agent-role">${a.enabled ? '✓ Actif' : 'Désactivé'}</div>
+        </div>
+        <button class="agent-edit-btn" onclick="toggleAgentEditor('${a.key}')">✎</button>
+        <button class="agent-toggle ${a.enabled ? 'on' : ''}" id="at_${a.key}" onclick="toggleAgent('${a.key}')"></button>
+      </div>
+      <div class="agent-editor" id="ae_${a.key}">
+        <textarea id="ap_${a.key}" oninput="updateAgentPrompt('${a.key}', this.value)">${esc(a.prompt)}</textarea>
       </div>
     </div>
   `).join('');
 }
 
-function pickOneJson(key) {
-  const inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = '.json';
-  inp.onchange = () => {
-    if (inp.files.length) {
-      const reader = new FileReader();
-      reader.onload = ev => { trySetAgent(key, ev.target.result, inp.files[0].name); updateCfg(); };
-      reader.readAsText(inp.files[0]);
-    }
-  };
-  inp.click();
+function toggleAgent(key) {
+  const agent = agentDefs.find(a => a.key === key);
+  if (!agent) return;
+  agent.enabled = !agent.enabled;
+  renderAgentGrid();
+  updateAgentBadge();
 }
 
-/* ═══════════════════════════════════════════════
-   STEP 2: METHOD SWITCH
-   ═══════════════════════════════════════════════ */
+function toggleAgentEditor(key) {
+  const editor = document.getElementById('ae_' + key);
+  if (editor) editor.classList.toggle('open');
+}
+
+function updateAgentPrompt(key, value) {
+  const agent = agentDefs.find(a => a.key === key);
+  if (agent) agent.prompt = value;
+}
+
+function updateAgentBadge() {
+  const count = agentDefs.filter(a => a.enabled).length;
+  const badge = document.getElementById('agentBadge');
+  badge.textContent = count + ' / 5';
+  badge.className = count > 0 ? 'badge ok' : 'badge warn';
+}
+
+function getActiveAgentsPayload() {
+  const payload = {};
+  agentDefs.filter(a => a.enabled).forEach(a => {
+    payload[a.label] = a.prompt;
+  });
+  return payload;
+}
+
+/* ═══════════════════════════════════════
+   CONFIG
+   ═══════════════════════════════════════ */
+function openConfig() { document.getElementById('configOverlay').classList.add('open'); }
+function closeConfig() { document.getElementById('configOverlay').classList.remove('open'); updateCfg(); }
+function toggleKey() {
+  const el = document.getElementById('cfgKey');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+function updateCfg() {
+  const hasKey = document.getElementById('cfgKey').value.trim().length > 0;
+  const dot = document.getElementById('topDot');
+  const txt = document.getElementById('topStatusText');
+  const warn = document.getElementById('cfgWarning');
+  const agentCount = agentDefs.filter(a => a.enabled).length;
+  if (hasKey) {
+    dot.className = 'status-dot ok';
+    txt.textContent = `API OK · ${agentCount}/5 agents`;
+    warn.style.display = 'none';
+  } else {
+    dot.className = 'status-dot';
+    txt.textContent = 'Non configuré';
+    warn.style.display = 'block';
+  }
+  updateAgentBadge();
+}
+
+/* ═══════════════════════════════════════
+   STEPPER
+   ═══════════════════════════════════════ */
+function goStep(n) {
+  curStep = n;
+  ['stab1','stab2'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.className = 'step-tab' + (i+1 === n ? ' active' : (i+1 < n ? ' done' : ''));
+  });
+  [1,2].forEach(j => {
+    document.getElementById('panel'+j).className = j === n ? 'panel visible' : 'panel';
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ═══════════════════════════════════════
+   METHOD SWITCH
+   ═══════════════════════════════════════ */
 function switchMethod(m) {
-  document.getElementById('mbAudio').className = 'method-btn' + (m === 'audio' ? ' active' : '');
-  document.getElementById('mbManual').className = 'method-btn' + (m === 'manual' ? ' active' : '');
-  document.getElementById('zoneAudio').style.display = m === 'audio' ? 'block' : 'none';
+  document.getElementById('mbPdf').className = m === 'pdf' ? 'method-btn active' : 'method-btn';
+  document.getElementById('mbPaste').className = m === 'paste' ? 'method-btn active' : 'method-btn';
+  document.getElementById('mbManual').className = m === 'manual' ? 'method-btn active' : 'method-btn';
+  document.getElementById('zonePdf').style.display = m === 'pdf' ? 'block' : 'none';
+  document.getElementById('zonePaste').style.display = m === 'paste' ? 'block' : 'none';
   document.getElementById('zoneManual').style.display = m === 'manual' ? 'block' : 'none';
 }
 
-/* ─── Audio ─── */
-function setAudioFile(file) {
-  audioFile = file;
-  document.getElementById('audioInfo').style.display = 'block';
-  document.getElementById('audioInfo').textContent = `📁 ${file.name} (${(file.size / 1024 / 1024).toFixed(1)} Mo)`;
-  document.getElementById('transcBtn').disabled = false;
-  document.getElementById('clearAudioBtn').style.display = 'inline-flex';
-  document.getElementById('aStatus').textContent = '';
+/* ═══════════════════════════════════════
+   FILE HANDLING
+   ═══════════════════════════════════════ */
+function initDragDrop() {
+  const dz = document.getElementById('pdfDropZone');
+  dz.addEventListener('dragenter', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragover', e => { e.preventDefault(); });
+  dz.addEventListener('dragleave', () => { dz.classList.remove('dragover'); });
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('dragover');
+    if (e.dataTransfer.files.length > 0) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  });
 }
 
-function clearAudio() {
-  audioFile = null;
-  document.getElementById('audioInfo').style.display = 'none';
-  document.getElementById('transcBtn').disabled = true;
-  document.getElementById('clearAudioBtn').style.display = 'none';
-  document.getElementById('aStatus').textContent = '';
-  document.getElementById('aProg').className = 'progress-wrap';
-  document.getElementById('audioPicker').value = '';
+function handleFileSelect(input) {
+  if (input.files && input.files.length > 0) processFile(input.files[0]);
 }
 
-/* ─── Transcription Pipeline ─── */
-async function runTranscription() {
-  if (!audioFile) return;
+async function processFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  loadedFileName = file.name;
+
+  if (['txt','md','text'].includes(ext)) {
+    loadedFileText = await file.text();
+    showFileLoaded();
+  } else if (ext === 'pdf') {
+    setStatus('fStatus', '📖 Extraction du texte PDF...');
+    try {
+      loadedFileText = await extractPdfText(file);
+      if (loadedFileText.trim().length < 20) {
+        setStatus('fStatus', '⚠ Très peu de texte extrait. Le PDF est peut-être scanné (images).');
+      }
+      showFileLoaded();
+    } catch (err) {
+      setStatus('fStatus', '✕ Erreur lecture PDF: ' + err.message);
+    }
+  } else {
+    setStatus('fStatus', '✕ Format non supporté: .' + ext);
+  }
+}
+
+async function extractPdfText(file) {
+  // Load pdf.js from CDN
+  if (!window.pdfjsLib) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(item => item.str).join(' ') + '\n';
+  }
+  return text;
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+function showFileLoaded() {
+  document.getElementById('pdfDropZone').style.display = 'none';
+  document.getElementById('fileLoaded').style.display = 'flex';
+  document.getElementById('loadedFileName').textContent = loadedFileName;
+  const chars = loadedFileText.length;
+  document.getElementById('loadedFileMeta').textContent = `${chars.toLocaleString()} caractères extraits — Prêt pour analyse`;
+  document.getElementById('analyzeBtn').disabled = false;
+  setStatus('fStatus', '');
+}
+
+function clearFile() {
+  loadedFileText = ''; loadedFileName = '';
+  document.getElementById('pdfDropZone').style.display = 'block';
+  document.getElementById('fileLoaded').style.display = 'none';
+  document.getElementById('analyzeBtn').disabled = true;
+  setStatus('fStatus', '');
+  document.getElementById('filePicker').value = '';
+}
+
+/* ═══════════════════════════════════════
+   ANALYSIS (fill questionnaire from text)
+   ═══════════════════════════════════════ */
+async function runAnalysis() {
+  if (!loadedFileText) return;
+  await analyzeText(loadedFileText);
+}
+
+async function runAnalysisFromPaste() {
+  const text = document.getElementById('pasteArea').value.trim();
+  if (!text) { alert('Veuillez coller du texte avant de lancer l\'analyse.'); return; }
+  await analyzeText(text);
+}
+
+async function analyzeText(text) {
   const apiKey = document.getElementById('cfgKey').value.trim();
-  const apiUrl = document.getElementById('cfgUrl').value.trim();
-  const whisperModel = document.getElementById('cfgWhisper').value.trim() || 'whisper-1';
+  if (!apiKey) { openConfig(); alert('Veuillez saisir votre clé API Anthropic.'); return; }
 
-  const btn = document.getElementById('transcBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Transcription en cours…';
+  const prog = document.getElementById('fProg');
+  const fill = document.getElementById('fProgFill');
+  prog.classList.add('active');
+  fill.style.width = '40%';
+  setStatus('fStatus', '🔄 Analyse du texte par Claude...');
 
-  const pw = document.getElementById('aProg');
-  const pf = document.getElementById('aProgFill');
-  pw.className = 'progress-wrap active';
-  pf.style.width = '30%';
-  document.getElementById('aStatus').textContent = 'Étape 1/2 — Transcription audio via Whisper…';
+  // Truncate very long texts
+  const maxChars = 80000;
+  const inputText = text.length > maxChars ? text.substring(0, maxChars) + '\n[... texte tronqué]' : text;
 
-  try {
-    // Step 1: Whisper
-    const formData = new FormData();
-    formData.append('file', audioFile);
-    formData.append('model', whisperModel);
-    formData.append('language', 'fr');
+  const prompt = `Tu es un expert en cadrage de projets d'innovation.
+Voici la transcription / le compte-rendu d'un entretien métier :
 
-    const whisperResp = await fetch(apiUrl + '/audio/transcriptions', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + apiKey },
-      body: formData,
-    });
-
-    if (!whisperResp.ok) throw new Error('HTTP ' + whisperResp.status + ': ' + await whisperResp.text());
-    const whisperData = await whisperResp.json();
-    const transcriptionText = whisperData.text || '';
-
-    pf.style.width = '60%';
-    document.getElementById('aStatus').textContent = 'Étape 2/2 — Analyse et remplissage du questionnaire…';
-
-    // Step 2: Extract structured data
-    const extractPrompt = `Tu es un expert en cadrage de projets d'innovation.
-Voici la transcription d'un entretien métier :
-
-"""${transcriptionText}"""
+"""${inputText}"""
 
 Extrais les informations pour remplir le questionnaire de cadrage.
 Réponds UNIQUEMENT en JSON strict avec ces 7 clés.
 Pour chaque clé, donne le texte extrait ou une chaîne vide si l'information est absente :
 {"q1_projet":"","q2_contexte":"","q3_finalite":"","q4_resultats":"","q5_acteurs":"","q6_reseau":"","q7_enjeux":""}`;
 
-    const chatResp = await callChatAPI(apiUrl, apiKey, extractPrompt);
-    const content = extractAssistantContent(chatResp);
+  try {
+    const content = await callClaudeAPI(apiKey, prompt);
     const extracted = parseJsonSafe(content);
 
     const mapping = {
@@ -861,75 +1169,74 @@ Pour chaque clé, donne le texte extrait ou une chaîne vide si l'information es
       q4: extracted.q4_resultats || '',
       q5: extracted.q5_acteurs || '',
       q6: extracted.q6_reseau || '',
-      q7: extracted.q7_enjeux || '',
+      q7: extracted.q7_enjeux || ''
     };
 
     for (const [id, val] of Object.entries(mapping)) {
       const el = document.getElementById(id);
       if (el) {
         el.value = val;
-        el.classList.toggle('missing', !val.trim());
+        el.className = el.className.replace(/ ?missing/g, '').replace(/ ?filled/g, '');
+        if (val.trim()) el.classList.add('filled');
+        else el.classList.add('missing');
       }
       const num = document.getElementById('qn_' + id);
       if (num) num.className = val.trim() ? 'qnum filled' : 'qnum warn';
     }
 
-    // Open all question bodies
+    // Open all questions
     questionDefs.forEach(q => {
       const qb = document.getElementById('qb_' + q.id);
-      const qc = document.getElementById('qc_' + q.id);
-      if (qb) qb.className = 'qbody open';
-      if (qc) qc.classList.add('open');
+      if (qb) qb.classList.add('open');
     });
 
     updateQBadge();
-    pf.style.width = '100%';
-    document.getElementById('aStatus').textContent = '✓ Questionnaire rempli. Vérifiez les champs en rouge (informations absentes).';
-
+    fill.style.width = '100%';
+    setStatus('fStatus', '✓ Questionnaire rempli. Vérifiez les champs en orange (informations absentes).');
   } catch (err) {
-    document.getElementById('aStatus').textContent = '✗ Erreur : ' + err.message;
-    pf.style.width = '0%';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Transcrire & remplir le questionnaire';
+    setStatus('fStatus', '✕ Erreur: ' + err.message);
   }
+  setTimeout(() => { prog.classList.remove('active'); fill.style.width = '0%'; }, 2000);
 }
 
-/* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════
    QUESTIONNAIRE
-   ═══════════════════════════════════════════════ */
+   ═══════════════════════════════════════ */
 function renderQuestionnaire() {
-  const body = document.getElementById('qBody');
-  body.innerHTML = questionDefs.map((q, i) => {
+  let html = '';
+  questionDefs.forEach((q, i) => {
     const field = q.tag === 'textarea'
       ? `<textarea class="ftextarea" id="${q.id}" placeholder="${esc(q.ph)}" oninput="onQInput('${q.id}')"></textarea>`
-      : `<input class="finput" id="${q.id}" placeholder="${esc(q.ph)}" oninput="onQInput('${q.id}')">`;
-    return `
-      <div class="qs">
-        <div class="qh" onclick="toggleQ('${q.id}')">
-          <span class="qnum" id="qn_${q.id}">${i + 1}</span>
-          <div><div class="qtitle">${esc(q.title)}</div><div class="qsub">${esc(q.sub)}</div></div>
-          <span class="qchev" id="qc_${q.id}">▼</span>
-        </div>
-        <div class="qbody" id="qb_${q.id}">
-          <div class="fgroup">${field}<div class="fhint">${esc(q.hint)}</div></div>
-        </div>
-      </div>`;
-  }).join('');
+      : `<input class="finput" id="${q.id}" placeholder="${esc(q.ph)}" oninput="onQInput('${q.id}')"/>`;
+
+    html += `<div class="qs">
+      <div class="qh" onclick="toggleQ('${q.id}')">
+        <span class="qnum" id="qn_${q.id}">${i+1}</span>
+        <div><div class="qtitle">${esc(q.title)}</div><div class="qsub">${esc(q.sub)}</div></div>
+        <span class="qchev" id="qc_${q.id}">▼</span>
+      </div>
+      <div class="qbody" id="qb_${q.id}">
+        <div class="fgroup">${field}<div class="fhint">${esc(q.hint)}</div></div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('qBody').innerHTML = html;
 }
 
 function toggleQ(id) {
   const body = document.getElementById('qb_' + id);
   const chev = document.getElementById('qc_' + id);
   if (!body) return;
-  const isOpen = body.classList.toggle('open');
-  if (chev) chev.classList.toggle('open', isOpen);
+  body.classList.toggle('open');
+  if (chev) chev.textContent = body.classList.contains('open') ? '▲' : '▼';
 }
 
 function onQInput(id) {
   const el = document.getElementById(id);
   const num = document.getElementById('qn_' + id);
-  if (el) el.classList.remove('missing');
+  if (!el) return;
+  el.classList.remove('missing', 'filled');
+  if (el.value.trim()) el.classList.add('filled');
   if (num) num.className = el.value.trim() ? 'qnum filled' : 'qnum';
   updateQBadge();
 }
@@ -942,66 +1249,103 @@ function updateQBadge() {
   });
   const b = document.getElementById('qBadge');
   b.textContent = count + ' / 7';
-  b.className = 'badge' + (count === 7 ? ' ok' : '');
+  b.className = count === 7 ? 'badge ok' : 'badge';
 }
 
-/* ═══════════════════════════════════════════════
-   STEP 3: GENERATION
-   ═══════════════════════════════════════════════ */
-let genDone = 0;
-
+/* ═══════════════════════════════════════
+   GENERATION
+   ═══════════════════════════════════════ */
 async function generateCadrage() {
   const apiKey = document.getElementById('cfgKey').value.trim();
-  const apiUrl = document.getElementById('cfgUrl').value.trim();
-  const model  = document.getElementById('cfgModel').value.trim();
+  if (!apiKey) { openConfig(); alert('Veuillez saisir votre clé API Anthropic.'); return; }
 
-  // Gather questionnaire
   const questionnaire = {};
   questionDefs.forEach(q => {
     const el = document.getElementById(q.id);
     questionnaire[q.id] = el ? el.value.trim() : '';
   });
 
-  // Gather agents (only loaded ones)
-  const expertsPayload = {};
-  for (const k in agents) { if (agents[k]) expertsPayload[k] = agents[k]; }
+  const filledCount = Object.values(questionnaire).filter(v => v).length;
+  if (filledCount === 0) {
+    alert('Veuillez remplir au moins une question avant de générer.'); return;
+  }
 
-  const loadedCount = Object.keys(expertsPayload).length;
-  const agentNotice = loadedCount < 5
-    ? `\n\nNOTE: Seuls ${loadedCount}/5 agents sont chargés. Fais au mieux avec les expertises disponibles.\n`
-    : '';
-
-  goStep(3);
-
-  // Reset
+  goStep(2);
   genDone = 0;
-  lastSynthHtml = '';
-  lastMockHtml = '';
+  lastSynthHtml = ''; lastMockHtml = ''; lastCadrageHtml = '';
 
-  // Show status
   document.getElementById('genStatusCard').style.display = 'block';
-  document.getElementById('genStatusBadge').textContent = '0 / 2';
+  document.getElementById('genStatusBadge').textContent = '0 / 3';
   document.getElementById('genStatusBadge').className = 'badge';
-  document.getElementById('genStatusSynth').innerHTML = '<span style="color:var(--blue);">● Appel API en cours…</span>';
-  document.getElementById('genStatusMock').innerHTML  = '<span style="color:var(--blue);">● Appel API en cours…</span>';
-  document.getElementById('genDots').style.display = 'block';
+  setGenStatus('Synth', 'pending', '<span class="spinner"></span> Appel API...');
+  setGenStatus('Mock', 'pending', '<span class="spinner"></span> Appel API...');
+  setGenStatus('Cadrage', 'pending', '<span class="spinner"></span> Appel API...');
 
-  writeToFrame('synthFrame', loadingPage('Génération de la synthèse en cours…'));
-  writeToFrame('mockFrame',  loadingPage('Génération de la maquette en cours…'));
+  writeToFrame('synthFrame', loadingPage('Synthèse'));
+  writeToFrame('mockFrame', loadingPage('Maquette'));
+  writeToFrame('cadrageFrame', loadingPage('Pré-cadrage'));
 
-  const systemCtx = `Tu es un collectif d'experts en cadrage de projets d'innovation (économiste, growth analyst, product strategist, tech lead, UX designer).
-Tu produis des livrables de cadrage ultra-structurés pour la SNCF / 574.${agentNotice}
+  const extraCtx = document.getElementById('cfgContext').value.trim();
+  const activeAgents = getActiveAgentsPayload();
+  const agentNames = Object.keys(activeAgents);
+  const agentList = agentNames.length > 0 ? agentNames.join(', ') : 'aucun agent activé';
 
-EXPERTS JSON :
-${JSON.stringify(expertsPayload)}
+  const systemCtx = `Tu es un collectif d'experts en cadrage de projets d'innovation (${agentList}). Tu produis des livrables de cadrage ultra-structurés pour la SNCF / Fabrique de l'Adoption Numérique (FAN / 574).
+
+EXPERTS MOBILISÉS :
+${JSON.stringify(activeAgents, null, 2)}
+${extraCtx ? '\nContexte additionnel : ' + extraCtx : ''}
 
 QUESTIONNAIRE :
 ${JSON.stringify(questionnaire)}`;
 
-  // ─── Livrable 1: Synthèse ───
-  const synthPrompt = systemCtx + `
+  // Launch 3 calls in parallel
+  genDeliverable(apiKey, systemCtx, buildSynthPrompt(systemCtx), 'synth', 'synthFrame', 'Synth');
+  genDeliverable(apiKey, systemCtx, buildMockPrompt(systemCtx), 'mock', 'mockFrame', 'Mock');
+  genDeliverable(apiKey, systemCtx, buildCadragePrompt(systemCtx), 'cadrage', 'cadrageFrame', 'Cadrage');
+}
 
-LIVRABLE 1 - SYNTHÈSE STRUCTURÉE
+async function genDeliverable(apiKey, systemCtx, prompt, key, frameId, statusKey) {
+  try {
+    const content = await callClaudeAPI(apiKey, prompt);
+    const html = cleanHtmlOutput(content);
+    if (key === 'synth') lastSynthHtml = html;
+    else if (key === 'mock') lastMockHtml = html;
+    else lastCadrageHtml = html;
+
+    if (html.length > 0) {
+      writeToFrame(frameId, html);
+      autoResizeFrame(frameId);
+      setGenStatus(statusKey, 'done', `✓ Terminé (${html.length.toLocaleString()} car.)`);
+    } else {
+      setGenStatus(statusKey, 'error', '⚠ Contenu vide');
+    }
+  } catch (err) {
+    setGenStatus(statusKey, 'error', '✕ ' + err.message.substring(0, 60));
+    writeToFrame(frameId, errorPage(err.message));
+  }
+  onGenPartDone();
+}
+
+function setGenStatus(key, cls, html) {
+  const el = document.getElementById('genStatus' + key);
+  el.className = 'gi-status ' + cls;
+  el.innerHTML = html;
+}
+
+function onGenPartDone() {
+  genDone++;
+  document.getElementById('genStatusBadge').textContent = genDone + ' / 3';
+  if (genDone >= 3) {
+    document.getElementById('genStatusBadge').className = 'badge ok';
+  }
+}
+
+/* ═══════════════════════════════════════
+   PROMPTS
+   ═══════════════════════════════════════ */
+function buildSynthPrompt(ctx) {
+  return ctx + `\n\nLIVRABLE 1 - SYNTHESE STRUCTUREE
 Génère un document HTML complet et autonome (avec <style> intégré) qui reformule la demande métier.
 
 RÈGLES :
@@ -1016,242 +1360,123 @@ RÈGLES :
   6. CE QUE VOUS POUVEZ METTRE - moyens métier + coûts estimés par scénario
 
 - Priorité chiffres : temps, gains, coûts, volumétrie
-- Design sobre : fond blanc, police sans-serif, couleurs SNCF (bleu #003366, accent #e84e3a)
+- Design sobre : fond blanc, police sans-serif, couleurs SNCF (bleu #0088CE, accent #DC582A)
 - HTML complet (doctype, head, body) prêt à l'affichage
 
 Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
+}
 
-  // ─── Livrable 2: Maquette ───
-  const mockPrompt = systemCtx + `
-
-LIVRABLE 2 - MAQUETTE / PROTOTYPE VISUEL DE L'APPLICATION
+function buildMockPrompt(ctx) {
+  return ctx + `\n\nLIVRABLE 2 - MAQUETTE / PROTOTYPE VISUEL DE L'APPLICATION
 À partir du besoin métier décrit dans le questionnaire, imagine et génère une MAQUETTE HTML de ce à quoi l'application ou la webapp demandée POURRAIT RESSEMBLER une fois réalisée.
 
 CE QUE TU DOIS FAIRE :
 - Créer un PROTOTYPE VISUEL (mockup) de l'interface utilisateur de la solution envisagée
 - C'est une maquette statique : elle n'a PAS besoin d'être fonctionnelle, elle doit MONTRER à quoi ça ressemblerait
-- Inventer des données fictives réalistes pour remplir les écrans
+- Inventer des données fictives réalistes pour remplir les écrans (noms, chiffres, statuts, tableaux de bord...)
 - Imaginer les écrans principaux : dashboard, formulaires, listes, tableaux, indicateurs, navigation
 - Donner une impression crédible et professionnelle de l'outil fini
 
 RÈGLES TECHNIQUES :
 - Page HTML complète et autonome (doctype, head avec <style> intégré, body)
 - Design sobre, moderne, professionnel - comme une vraie webapp d'entreprise
-- Palette : fond #f4f5f7, surfaces blanches, titres bleu SNCF #003366, accents #e84e3a, texte #1a1f2e
+- Palette : fond #F0F1F4, surfaces blanches, titres bleu SNCF #0088CE, accents #DC582A, texte #3C3732
 - Police system sans-serif (Segoe UI, Arial)
-- Utiliser flexbox/grid pour une mise en page réaliste (sidebar, header, cards, tables…)
+- Utiliser flexbox/grid pour une mise en page réaliste (sidebar, header, cards, tables...)
 - Icônes Unicode pour illustrer la navigation et les sections
 - Barre de navigation en haut ou sidebar avec le nom du projet
-- Footer discret : "Maquette générée par 574 Cadrage Express - Prototype non fonctionnel"
+- Footer discret : 'Maquette générée par Cadrage Express v7 — Prototype non fonctionnel'
 
 IMPORTANT : Ce n'est PAS un résumé du cadrage. C'est un APERÇU VISUEL de l'application métier que le demandeur souhaite obtenir.
 
 Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
-
-  // Fire both in parallel
-  callChatAPIFull(apiUrl, apiKey, model, synthPrompt).then(raw => {
-    try {
-      const content = extractAssistantContent(raw);
-      lastSynthHtml = cleanHtmlOutput(content);
-      if (!lastSynthHtml) {
-        writeToFrame('synthFrame', buildDebugPage('Synthèse', 'Contenu vide après nettoyage', content, JSON.stringify(raw)));
-        document.getElementById('genStatusSynth').innerHTML = '<span style="color:var(--accent);">⚠ Contenu vide</span>';
-      } else {
-        writeToFrame('synthFrame', lastSynthHtml);
-        autoResizeFrame('synthFrame');
-        document.getElementById('genStatusSynth').innerHTML = `<span style="color:var(--green);">✓ Terminé (${lastSynthHtml.length} car.)</span>`;
-      }
-    } catch (e) {
-      writeToFrame('synthFrame', buildDebugPage('Synthèse', e.message, '', JSON.stringify(raw)));
-      document.getElementById('genStatusSynth').innerHTML = `<span style="color:var(--danger);">✗ ${esc(e.message).slice(0,60)}</span>`;
-    }
-    onGenPartDone();
-  }).catch(err => {
-    writeToFrame('synthFrame', buildDebugPage('Synthèse', 'Erreur HTTP', '', err.message));
-    document.getElementById('genStatusSynth').innerHTML = '<span style="color:var(--danger);">✗ Erreur API</span>';
-    onGenPartDone();
-  });
-
-  callChatAPIFull(apiUrl, apiKey, model, mockPrompt).then(raw => {
-    try {
-      const content = extractAssistantContent(raw);
-      lastMockHtml = cleanHtmlOutput(content);
-      if (!lastMockHtml) {
-        writeToFrame('mockFrame', buildDebugPage('Maquette', 'Contenu vide après nettoyage', content, JSON.stringify(raw)));
-        document.getElementById('genStatusMock').innerHTML = '<span style="color:var(--accent);">⚠ Contenu vide</span>';
-      } else {
-        writeToFrame('mockFrame', lastMockHtml);
-        autoResizeFrame('mockFrame');
-        document.getElementById('genStatusMock').innerHTML = `<span style="color:var(--green);">✓ Terminé (${lastMockHtml.length} car.)</span>`;
-      }
-    } catch (e) {
-      writeToFrame('mockFrame', buildDebugPage('Maquette', e.message, '', JSON.stringify(raw)));
-      document.getElementById('genStatusMock').innerHTML = `<span style="color:var(--danger);">✗ ${esc(e.message).slice(0,60)}</span>`;
-    }
-    onGenPartDone();
-  }).catch(err => {
-    writeToFrame('mockFrame', buildDebugPage('Maquette', 'Erreur HTTP', '', err.message));
-    document.getElementById('genStatusMock').innerHTML = '<span style="color:var(--danger);">✗ Erreur API</span>';
-    onGenPartDone();
-  });
 }
 
-function onGenPartDone() {
-  genDone++;
-  document.getElementById('genStatusBadge').textContent = genDone + ' / 2';
-  if (genDone >= 2) {
-    document.getElementById('genStatusBadge').className = 'badge ok';
-    document.getElementById('genDots').style.display = 'none';
-  }
+function buildCadragePrompt(ctx) {
+  return ctx + `\n\nLIVRABLE 3 - PREMIERS ÉLÉMENTS DE CADRAGE TECHNIQUE
+Ce document est un PRÉ-CAHIER DES CHARGES que la personne qui cadre le projet va CONSERVER et utiliser comme SUPPORT DE TRAVAIL pour aller ensuite échanger avec les véritables experts humains (UX designer, architecte technique, financier, juridique, etc.).
+
+CE QUE TU DOIS PRODUIRE :
+Un document HTML structuré, dense et actionnable, organisé en sections claires :
+
+1. CONTEXTE ET PÉRIMÈTRE - Reformulation précise du besoin, Périmètre IN/OUT (tableau 2 colonnes), Utilisateurs cibles
+2. EXIGENCES FONCTIONNELLES - Liste numérotée (EF-001, EF-002...) avec description, priorité (Must/Should/Could), complexité (S/M/L/XL)
+3. EXIGENCES NON FONCTIONNELLES - Performance, Sécurité, Disponibilité, Accessibilité, Compatibilité
+4. ARCHITECTURE ET INTÉGRATION (HYPOTHÈSES) - Type d'architecture, Intégrations SI, Contraintes techniques
+5. DONNÉES ET RGPD - Types de données, Données personnelles, Conservation, Points DPO
+6. QUESTIONS OUVERTES POUR LES EXPERTS - Tableau 3 colonnes : Question | Expert concerné | Criticité (au moins 8-12 questions)
+7. ESTIMATION MACRO - Fourchette de charge, Planning macro, Budget indicatif
+
+RÈGLES ÉDITORIALES :
+- Ton professionnel mais direct
+- Privilégier les tableaux et listes structurées
+- Chaque élément incertain porte un tag visible en orange : 'À VALIDER', 'À CONFIRMER', 'HYPOTHÈSE'
+- Header : 'PREMIERS ÉLÉMENTS DE CADRAGE — [NOM DU PROJET]' + date + mention 'Cadrage Express v7 — Document de travail'
+- Footer : 'Ce document est un pré-cadrage généré par IA. Il doit être confronté aux experts métier avant toute décision.'
+
+RÈGLES TECHNIQUES :
+- Page HTML complète et autonome
+- Design sobre, lisible, imprimable : fond blanc, titres bleu SNCF #0088CE, tags orange #DC582A
+- Les tags 'À VALIDER' en <span> avec fond orange clair et texte #DC582A, bold
+
+Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
 }
 
-function loadingPage(msg) {
-  return `<!DOCTYPE html><html><body style="font-family:'DM Sans',system-ui,sans-serif;padding:48px;color:#9ca3af;text-align:center;">
-    <p style="font-size:15px;">⚙ ${msg}</p>
-    <p style="font-size:12px;margin-top:8px;">Appel API lancé, veuillez patienter…</p>
-  </body></html>`;
-}
+/* ═══════════════════════════════════════
+   CLAUDE API
+   ═══════════════════════════════════════ */
+async function callClaudeAPI(apiKey, userPrompt) {
+  const model = document.getElementById('cfgModel').value.trim() || 'claude-sonnet-4-20250514';
+  const maxTokens = parseInt(document.getElementById('cfgMaxTokens').value) || 8192;
 
-function buildDebugPage(titre, erreur, content, raw) {
-  const rawStr = (raw || '').slice(0, 1500);
-  const contentStr = (content || '(vide)').slice(0, 500);
-  return `<!DOCTYPE html><html><head><style>
-    body{font-family:'DM Sans',system-ui,sans-serif;padding:24px;color:#1a1f2e;font-size:13px;}
-    h2{color:#dc2626;font-size:16px;margin-bottom:12px;}
-    .block{background:#f8f9fc;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin:10px 0;
-    font-family:'JetBrains Mono',monospace;font-size:11px;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow:auto;}
-    .label{font-weight:700;font-size:12px;color:#4b5563;margin-top:14px;}
-  </style></head><body>
-    <h2>⚠ Debug ${esc(titre)}</h2>
-    <p><strong>Erreur :</strong> ${esc(erreur)}</p>
-    <div class="label">Contenu extrait (avant nettoyage) :</div>
-    <div class="block">${esc(contentStr)}</div>
-    <div class="label">Réponse API brute :</div>
-    <div class="block">${esc(rawStr)}</div>
-  </body></html>`;
-}
-
-/* ═══════════════════════════════════════════════
-   IFRAME WRITING
-   ═══════════════════════════════════════════════ */
-function writeToFrame(frameId, html) {
-  try {
-    const iframe = document.getElementById(frameId);
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
-    doc.open();
-    doc.write(html);
-    doc.close();
-  } catch (e) {
-    console.error('Erreur écriture iframe ' + frameId, e);
-  }
-}
-
-function autoResizeFrame(frameId) {
-  setTimeout(() => {
-    try {
-      const iframe = document.getElementById(frameId);
-      const doc = iframe.contentDocument || iframe.contentWindow.document;
-      const h = Math.max(doc.body.scrollHeight || 0, doc.documentElement.scrollHeight || 0);
-      if (h > 50) iframe.style.height = Math.min(h + 40, 2400) + 'px';
-    } catch (e) {}
-  }, 800);
-}
-
-/* ─── Deliverable Tabs ─── */
-function switchDel(which) {
-  document.getElementById('dtSynth').className = 'del-tab' + (which === 'synth' ? ' active' : '');
-  document.getElementById('dtMock').className  = 'del-tab' + (which === 'mock' ? ' active' : '');
-  document.getElementById('dpSynth').className = 'del-pane' + (which === 'synth' ? ' visible' : '');
-  document.getElementById('dpMock').className  = 'del-pane' + (which === 'mock' ? ' visible' : '');
-}
-
-/* ─── Copy / Export ─── */
-function copySynthesis() { if (lastSynthHtml) copyText(lastSynthHtml); }
-function copyMockup() { if (lastMockHtml) copyText(lastMockHtml); }
-
-async function copyText(txt) {
-  try {
-    await navigator.clipboard.writeText(txt);
-    showToast();
-  } catch {
-    // Fallback
-    const ta = document.createElement('textarea');
-    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast();
-  }
-}
-
-function showToast() {
-  const t = document.getElementById('toast');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
-}
-
-function exportMockupFile() {
-  if (!lastMockHtml) return;
-  const blob = new Blob([lastMockHtml], { type: 'text/html;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'cadrage_maquette.html';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-/* ═══════════════════════════════════════════════
-   API: CHAT COMPLETIONS
-   ═══════════════════════════════════════════════ */
-async function callChatAPI(apiUrl, apiKey, userPrompt) {
-  const model = document.getElementById('cfgModel').value.trim();
-  return callChatAPIFull(apiUrl, apiKey, model, userPrompt);
-}
-
-async function callChatAPIFull(apiUrl, apiKey, model, userPrompt) {
-  const maxTok = parseInt(document.getElementById('cfgMaxTokens').value.trim(), 10) || 16384;
-  const resp = await fetch(apiUrl + '/chat/completions', {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + apiKey,
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
-      model,
-      temperature: 0.2,
-      max_tokens: maxTok,
+      model: model,
+      max_tokens: maxTokens,
       messages: [
-        { role: 'system', content: "Tu es un expert du cadrage de projets d'innovation. Réponds uniquement en HTML pur quand demandé." },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
+        { role: 'user', content: userPrompt }
+      ]
+    })
   });
-  if (!resp.ok) throw new Error('HTTP ' + resp.status + ': ' + await resp.text());
-  return await resp.json();
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`HTTP ${response.status}: ${errText.substring(0, 200)}`);
+  }
+
+  const data = await response.json();
+
+  if (data.content && data.content.length > 0) {
+    return data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+  }
+  throw new Error('Réponse vide ou structure inattendue');
 }
 
-/* ═══════════════════════════════════════════════
-   RESPONSE PARSING
-   ═══════════════════════════════════════════════ */
-function extractAssistantContent(data) {
-  // Standard OpenAI
-  if (data?.choices?.[0]?.message?.content) return data.choices[0].message.content;
-  // Some gateways: choices[0].text
-  if (data?.choices?.[0]?.text) return data.choices[0].text;
-  // Fallbacks
-  if (data?.result) return data.result;
-  if (data?.output) return data.output;
-  if (data?.data?.choices?.[0]?.message?.content) return data.data.choices[0].message.content;
+/* ═══════════════════════════════════════
+   UTILS
+   ═══════════════════════════════════════ */
+function esc(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-  const keys = Object.keys(data || {});
-  throw new Error('Contenu vide ou structure inattendue. Clés racine: [' + keys.join(', ') + ']');
+function setStatus(id, msg) {
+  document.getElementById(id).textContent = msg;
 }
 
 function parseJsonSafe(content) {
-  try { return JSON.parse(content); } catch {}
+  try { return JSON.parse(content); } catch(e) {}
+  // Try to extract JSON from the content
   const i = content.indexOf('{');
   const j = content.lastIndexOf('}');
   if (i !== -1 && j > i) {
-    try { return JSON.parse(content.slice(i, j + 1)); } catch {}
+    try { return JSON.parse(content.substring(i, j + 1)); } catch(e2) {}
   }
   return {};
 }
@@ -1260,13 +1485,71 @@ function cleanHtmlOutput(content) {
   return content.replace(/^```html?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
 }
 
-/* ═══════════════════════════════════════════════
-   UTILS
-   ═══════════════════════════════════════════════ */
-function esc(s) {
-  return (s ?? '').toString()
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function writeToFrame(frameId, html) {
+  const iframe = document.getElementById(frameId);
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+}
+
+function autoResizeFrame(frameId) {
+  setTimeout(() => {
+    try {
+      const iframe = document.getElementById(frameId);
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      const h = Math.max(doc.body.scrollHeight || 0, doc.documentElement.scrollHeight || 0);
+      if (h > 50) iframe.style.height = Math.min(h + 40, 2000) + 'px';
+    } catch(e) {}
+  }, 800);
+}
+
+function loadingPage(title) {
+  return `<!DOCTYPE html><html><body style="font-family:'Avenir','Segoe UI',sans-serif;padding:60px;text-align:center;color:#9B9DA3;background:#fafbfc;">
+    <div style="font-size:28px;margin-bottom:12px;">⚙</div>
+    <p style="font-size:14px;font-weight:500;">Génération : ${title}</p>
+    <p style="font-size:12px;">Appel API en cours, veuillez patienter...</p>
+  </body></html>`;
+}
+
+function errorPage(msg) {
+  return `<!DOCTYPE html><html><body style="font-family:'Avenir','Segoe UI',sans-serif;padding:40px;color:#DC582A;background:#fafbfc;">
+    <h2 style="font-size:16px;">⚠ Erreur</h2>
+    <p style="font-size:13px;color:#666;">${esc(msg)}</p>
+  </body></html>`;
+}
+
+/* ═══════════════════════════════════════
+   DELIVERABLE TABS
+   ═══════════════════════════════════════ */
+function switchDel(which) {
+  ['Synth','Mock','Cadrage'].forEach(k => {
+    const key = k.toLowerCase();
+    document.getElementById('dt' + k).className = which === key ? 'del-tab active' : 'del-tab';
+    document.getElementById('dp' + k).className = which === key ? 'del-pane visible' : 'del-pane';
+  });
+}
+
+/* ═══════════════════════════════════════
+   DOWNLOAD
+   ═══════════════════════════════════════ */
+function downloadHtml(html, filename) {
+  if (!html) { alert('Aucun contenu à télécharger.'); return; }
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('💾 Fichier téléchargé');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg || '✓ OK';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 </script>
 </body>
