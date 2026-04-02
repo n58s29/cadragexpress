@@ -50,16 +50,25 @@
         <h3>📥 Source du besoin</h3>
       </div>
       <div class="card-bd">
-        <div class="method-toggle">
-          <button class="method-btn active" id="mbPdf" onclick="switchMethod('pdf')">📄 PDF / Fichier texte</button>
-          <button class="method-btn" id="mbAudio" onclick="switchMethod('audio')">🎙 Audio</button>
-          <button class="method-btn" id="mbPaste" onclick="switchMethod('paste')">📋 Coller du texte</button>
-          <button class="method-btn" id="mbManual" onclick="switchMethod('manual')">✏ Saisie manuelle</button>
-          <button class="method-btn" id="mbLive" onclick="switchMethod('live')">🎙 Dictée en direct</button>
+        <!-- Sélecteur niveau 1 : Audio / Texte -->
+        <div class="source-group-toggle">
+          <button class="source-group-btn active" id="sgAudio" onclick="switchSourceGroup('audio')">🎙 Audio</button>
+          <button class="source-group-btn" id="sgText" onclick="switchSourceGroup('text')">📄 Texte</button>
+        </div>
+        <!-- Sous-options Audio -->
+        <div id="audioSubBar" class="source-sub-toggle">
+          <button class="source-sub-btn active" id="ssFile" onclick="switchMethod('audio')">📁 Importer un fichier</button>
+          <button class="source-sub-btn" id="ssLive" onclick="switchMethod('live')">🎤 Dictée en direct</button>
+        </div>
+        <!-- Sous-options Texte -->
+        <div id="textSubBar" class="source-sub-toggle" style="display:none;">
+          <button class="source-sub-btn" id="ssPdf" onclick="switchMethod('pdf')">📄 PDF / Fichier texte</button>
+          <button class="source-sub-btn" id="ssPaste" onclick="switchMethod('paste')">📋 Coller du texte</button>
+          <button class="source-sub-btn" id="ssManual" onclick="switchMethod('manual')">✏ Saisie manuelle</button>
         </div>
 
         <!-- PDF/Text Zone -->
-        <div id="zonePdf">
+        <div id="zonePdf" style="display:none;">
           <div id="pdfDropZone" class="dropzone" onclick="document.getElementById('filePicker').click()">
             <span class="dz-icon">📄</span>
             <h4>Déposez un fichier ici</h4>
@@ -102,7 +111,7 @@
         </div>
 
         <!-- Audio Zone -->
-        <div id="zoneAudio" style="display:none;">
+        <div id="zoneAudio">
           <div id="audioDropZone" class="dropzone" onclick="document.getElementById('audioPicker').click()">
             <span class="dz-icon">🎙</span>
             <h4>Déposez un fichier audio ici</h4>
@@ -163,8 +172,12 @@
     <!-- Questionnaire -->
     <div class="card">
       <div class="card-hd">
-        <h3>📋 Questionnaire de cadrage systémique</h3>
-        <span class="badge" id="qBadge">0 / 7</span>
+        <h3>📋 Questionnaire de cadrage</h3>
+        <span class="badge" id="qBadge">0 / 65</span>
+      </div>
+      <div class="q-progress-wrap">
+        <div class="q-progress-bar"><div class="q-progress-fill" id="qProgressFill"></div></div>
+        <div class="q-progress-label" id="qProgressLabel">0 / 65 (0%)</div>
       </div>
       <div class="card-bd" id="qBody"></div>
     </div>

@@ -11,6 +11,10 @@ let lastSynthHtml = '';
 let lastMockHtml = '';
 let lastCadrageHtml = '';
 let genDone = 0;
+let answeredQuestions = {};         // { "1.1": "réponse courte", ... }
+const LIVE_CHUNK_SIZE = 400;        // nb de nouveaux chars avant analyse progressive
+let liveLastAnalyzedLen = 0;
+let liveAnalysisRunning = false;
 
 const agentDefs = [
   {
@@ -292,14 +296,33 @@ function goStep(n) {
 }
 
 /* ═══════════════════════════════════════
-   METHOD SWITCH
+   SOURCE SWITCH
    ═══════════════════════════════════════ */
+const METHOD_GROUP = { audio:'audio', live:'audio', pdf:'text', paste:'text', manual:'text' };
+const METHOD_SUB   = { audio:'ssFile', live:'ssLive', pdf:'ssPdf', paste:'ssPaste', manual:'ssManual' };
+const METHOD_ZONE  = { audio:'zoneAudio', live:'zoneLive', pdf:'zonePdf', paste:'zonePaste', manual:'zoneManual' };
+
+function switchSourceGroup(group) {
+  document.getElementById('sgAudio').className = group === 'audio' ? 'source-group-btn active' : 'source-group-btn';
+  document.getElementById('sgText').className  = group === 'text'  ? 'source-group-btn active' : 'source-group-btn';
+  document.getElementById('audioSubBar').style.display = group === 'audio' ? '' : 'none';
+  document.getElementById('textSubBar').style.display  = group === 'text'  ? '' : 'none';
+  switchMethod(group === 'audio' ? 'audio' : 'pdf');
+}
+
 function switchMethod(m) {
-  ['pdf','audio','paste','manual','live'].forEach(id => {
-    document.getElementById('mb' + id.charAt(0).toUpperCase() + id.slice(1)).className =
-      m === id ? 'method-btn active' : 'method-btn';
-    document.getElementById('zone' + id.charAt(0).toUpperCase() + id.slice(1)).style.display =
-      m === id ? 'block' : 'none';
+  const group = METHOD_GROUP[m];
+  document.getElementById('sgAudio').className = group === 'audio' ? 'source-group-btn active' : 'source-group-btn';
+  document.getElementById('sgText').className  = group === 'text'  ? 'source-group-btn active' : 'source-group-btn';
+  document.getElementById('audioSubBar').style.display = group === 'audio' ? '' : 'none';
+  document.getElementById('textSubBar').style.display  = group === 'text'  ? '' : 'none';
+  Object.entries(METHOD_SUB).forEach(([k, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.className = k === m ? 'source-sub-btn active' : 'source-sub-btn';
+  });
+  Object.entries(METHOD_ZONE).forEach(([k, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = k === m ? 'block' : 'none';
   });
   if (m !== 'live') stopMic();
 }
@@ -332,6 +355,10 @@ function startMic() {
       if (e.results[i].isFinal) {
         liveTranscriptFinal += e.results[i][0].transcript + ' ';
         document.getElementById('liveTranscript').value = liveTranscriptFinal;
+        // Déclenche une analyse progressive si assez de nouveaux chars
+        if (liveTranscriptFinal.length - liveLastAnalyzedLen >= LIVE_CHUNK_SIZE) {
+          scheduleLiveAnalysis();
+        }
       } else {
         interim += e.results[i][0].transcript;
       }
@@ -379,17 +406,39 @@ function stopMic() {
 function clearLive() {
   stopMic();
   liveTranscriptFinal = '';
+  liveLastAnalyzedLen = 0;
   document.getElementById('liveTranscript').value = '';
   document.getElementById('micStatus').textContent = 'Cliquez pour commencer la dictée';
 }
 
-function runAnalysisFromLive() {
+async function scheduleLiveAnalysis() {
+  if (liveAnalysisRunning) return;
+  const apiKey = document.getElementById('cfgKey').value.trim();
+  if (!apiKey) return;
+  liveAnalysisRunning = true;
+  liveLastAnalyzedLen = liveTranscriptFinal.length;
+  try {
+    const content = await callClaudeAPI(apiKey, buildCheckPrompt(liveTranscriptFinal));
+    const answers = parseJsonSafe(content);
+    applyAnswers(answers);
+    const n = Object.keys(answeredQuestions).length;
+    document.getElementById('micStatus').textContent =
+      `🔴 Enregistrement... ${n} question${n > 1 ? 's' : ''} identifiée${n > 1 ? 's' : ''}`;
+  } catch (_) {}
+  liveAnalysisRunning = false;
+  // Si du texte est arrivé pendant l'analyse, relancer
+  if (liveTranscriptFinal.length - liveLastAnalyzedLen >= LIVE_CHUNK_SIZE) {
+    scheduleLiveAnalysis();
+  }
+}
+
+async function runAnalysisFromLive() {
   const text = document.getElementById('liveTranscript').value.trim();
   if (!text) { alert('La transcription est vide. Parlez d\'abord !'); return; }
-  // Bascule vers zonePaste pour réutiliser le flux d'analyse et la barre de progression
-  switchMethod('paste');
-  document.getElementById('pasteArea').value = text;
-  runAnalysisFromPaste();
+  document.getElementById('micStatus').textContent = '🔄 Analyse finale par Claude...';
+  await analyzeText(text, 'aProg', 'aProgFill', 'aStatus');
+  document.getElementById('micStatus').textContent =
+    `✓ Analyse terminée — ${Object.keys(answeredQuestions).length} questions identifiées`;
 }
 
 /* ═══════════════════════════════════════
@@ -553,49 +602,26 @@ async function runAnalysisFromAudio() {
   fill.style.width = '30%';
   setStatus('aStatus', '🎙 Transcription et analyse par Claude...');
 
-  const prompt = `Tu es un expert en cadrage de projets d'innovation.
-Voici un enregistrement audio (réunion, entretien métier ou expression de besoin).
+  const lines = [];
+  if (questionDefs.blocs) {
+    questionDefs.blocs.forEach(b => b.questions.forEach(q => lines.push(`${q.id} | ${q.texte}`)));
+  }
+  const prompt = `Analyse cet enregistrement audio d'une réunion ou entretien métier.
+Transcris l'audio et identifie quelles questions de cadrage y sont répondues.
 
-Transcris l'audio puis extrais les informations pour remplir le questionnaire de cadrage.
-Réponds UNIQUEMENT en JSON strict avec ces 7 clés.
-Pour chaque clé, donne le texte extrait ou une chaîne vide si l'information est absente :
-{"q1_projet":"","q2_contexte":"","q3_finalite":"","q4_resultats":"","q5_acteurs":"","q6_reseau":"","q7_enjeux":""}`;
+QUESTIONS :
+${lines.join('\n')}
+
+Réponds UNIQUEMENT avec un JSON {"id": "réponse courte (max 100 car.)"}. N'inclure que les questions répondues.`;
 
   try {
     fill.style.width = '60%';
     const content = await callClaudeAPIWithAudio(apiKey, loadedAudioBase64, loadedAudioMediaType, prompt);
-    const extracted = parseJsonSafe(content);
-
-    const mapping = {
-      q1: extracted.q1_projet || '',
-      q2: extracted.q2_contexte || '',
-      q3: extracted.q3_finalite || '',
-      q4: extracted.q4_resultats || '',
-      q5: extracted.q5_acteurs || '',
-      q6: extracted.q6_reseau || '',
-      q7: extracted.q7_enjeux || ''
-    };
-
-    for (const [id, val] of Object.entries(mapping)) {
-      const el = document.getElementById(id);
-      if (el) {
-        el.value = val;
-        el.className = el.className.replace(/ ?missing/g, '').replace(/ ?filled/g, '');
-        if (val.trim()) el.classList.add('filled');
-        else el.classList.add('missing');
-      }
-      const num = document.getElementById('qn_' + id);
-      if (num) num.className = val.trim() ? 'qnum filled' : 'qnum warn';
-    }
-
-    questionDefs.forEach(q => {
-      const qb = document.getElementById('qb_' + q.id);
-      if (qb) qb.classList.add('open');
-    });
-
-    updateQBadge();
+    const answers = parseJsonSafe(content);
+    applyAnswers(answers);
     fill.style.width = '100%';
-    setStatus('aStatus', '✓ Questionnaire rempli depuis l\'audio. Vérifiez les champs en orange.');
+    const n = Object.keys(answers).length;
+    setStatus('aStatus', `✓ ${n} question${n > 1 ? 's' : ''} identifiée${n > 1 ? 's' : ''} depuis l'audio.`);
   } catch (err) {
     setStatus('aStatus', '✕ Erreur : ' + err.message);
   }
@@ -603,135 +629,168 @@ Pour chaque clé, donne le texte extrait ou une chaîne vide si l'information es
 }
 
 /* ═══════════════════════════════════════
-   ANALYSIS (fill questionnaire from text)
+   ANALYSIS (text → check questions)
    ═══════════════════════════════════════ */
 async function runAnalysis() {
   if (!loadedFileText) return;
-  await analyzeText(loadedFileText);
+  await analyzeText(loadedFileText, 'fProg', 'fProgFill', 'fStatus');
 }
 
 async function runAnalysisFromPaste() {
   const text = document.getElementById('pasteArea').value.trim();
   if (!text) { alert('Veuillez coller du texte avant de lancer l\'analyse.'); return; }
-  await analyzeText(text);
+  await analyzeText(text, 'fProg', 'fProgFill', 'fStatus');
 }
 
-async function analyzeText(text) {
+function buildCheckPrompt(text) {
+  const lines = [];
+  if (questionDefs.blocs) {
+    questionDefs.blocs.forEach(b => b.questions.forEach(q => lines.push(`${q.id} | ${q.texte}`)));
+  }
+  const maxChars = 60000;
+  const inputText = text.length > maxChars ? text.substring(0, maxChars) + '\n[...tronqué]' : text;
+  return `Tu analyses un texte pour identifier quelles questions de cadrage y sont répondues.
+
+QUESTIONS (format "id | texte") :
+${lines.join('\n')}
+
+TEXTE :
+"""
+${inputText}
+"""
+
+Réponds UNIQUEMENT avec un JSON où chaque clé est l'id de la question et la valeur est la réponse extraite (max 100 caractères). N'inclure que les questions effectivement répondues.
+Exemple : {"1.1": "Automatiser les rapports mensuels", "2.1": "Suite à un audit interne"}`;
+}
+
+async function analyzeText(text, progId = 'fProg', fillId = 'fProgFill', statusId = 'fStatus') {
   const apiKey = document.getElementById('cfgKey').value.trim();
   if (!apiKey) { openConfig(); alert('Veuillez saisir votre clé API Anthropic.'); return; }
 
-  const prog = document.getElementById('fProg');
-  const fill = document.getElementById('fProgFill');
+  const prog = document.getElementById(progId);
+  const fill = document.getElementById(fillId);
   prog.classList.add('active');
   fill.style.width = '40%';
-  setStatus('fStatus', '🔄 Analyse du texte par Claude...');
-
-  // Truncate very long texts
-  const maxChars = 80000;
-  const inputText = text.length > maxChars ? text.substring(0, maxChars) + '\n[... texte tronqué]' : text;
-
-  const prompt = `Tu es un expert en cadrage de projets d'innovation.
-Voici la transcription / le compte-rendu d'un entretien métier :
-
-"""${inputText}"""
-
-Extrais les informations pour remplir le questionnaire de cadrage.
-Réponds UNIQUEMENT en JSON strict avec ces 7 clés.
-Pour chaque clé, donne le texte extrait ou une chaîne vide si l'information est absente :
-{"q1_projet":"","q2_contexte":"","q3_finalite":"","q4_resultats":"","q5_acteurs":"","q6_reseau":"","q7_enjeux":""}`;
+  setStatus(statusId, '🔄 Analyse par Claude...');
 
   try {
-    const content = await callClaudeAPI(apiKey, prompt);
-    const extracted = parseJsonSafe(content);
-
-    const mapping = {
-      q1: extracted.q1_projet || '',
-      q2: extracted.q2_contexte || '',
-      q3: extracted.q3_finalite || '',
-      q4: extracted.q4_resultats || '',
-      q5: extracted.q5_acteurs || '',
-      q6: extracted.q6_reseau || '',
-      q7: extracted.q7_enjeux || ''
-    };
-
-    for (const [id, val] of Object.entries(mapping)) {
-      const el = document.getElementById(id);
-      if (el) {
-        el.value = val;
-        el.className = el.className.replace(/ ?missing/g, '').replace(/ ?filled/g, '');
-        if (val.trim()) el.classList.add('filled');
-        else el.classList.add('missing');
-      }
-      const num = document.getElementById('qn_' + id);
-      if (num) num.className = val.trim() ? 'qnum filled' : 'qnum warn';
-    }
-
-    // Open all questions
-    questionDefs.forEach(q => {
-      const qb = document.getElementById('qb_' + q.id);
-      if (qb) qb.classList.add('open');
-    });
-
-    updateQBadge();
+    const content = await callClaudeAPI(apiKey, buildCheckPrompt(text));
+    const answers = parseJsonSafe(content);
+    applyAnswers(answers);
     fill.style.width = '100%';
-    setStatus('fStatus', '✓ Questionnaire rempli. Vérifiez les champs en orange (informations absentes).');
+    const n = Object.keys(answers).length;
+    setStatus(statusId, `✓ ${n} question${n > 1 ? 's' : ''} identifiée${n > 1 ? 's' : ''}. Vérifiez et complétez manuellement.`);
   } catch (err) {
-    setStatus('fStatus', '✕ Erreur: ' + err.message);
+    setStatus(statusId, '✕ Erreur: ' + err.message);
   }
   setTimeout(() => { prog.classList.remove('active'); fill.style.width = '0%'; }, 2000);
 }
 
 /* ═══════════════════════════════════════
-   QUESTIONNAIRE
+   QUESTIONNAIRE (blocs + cases à cocher)
    ═══════════════════════════════════════ */
 function renderQuestionnaire() {
+  if (!questionDefs.blocs) return;
   let html = '';
-  questionDefs.forEach((q, i) => {
-    const field = q.tag === 'textarea'
-      ? `<textarea class="ftextarea" id="${q.id}" placeholder="${esc(q.ph)}" oninput="onQInput('${q.id}')"></textarea>`
-      : `<input class="finput" id="${q.id}" placeholder="${esc(q.ph)}" oninput="onQInput('${q.id}')"/>`;
-
-    html += `<div class="qs">
-      <div class="qh" onclick="toggleQ('${q.id}')">
-        <span class="qnum" id="qn_${q.id}">${i+1}</span>
-        <div><div class="qtitle">${esc(q.title)}</div><div class="qsub">${esc(q.sub)}</div></div>
-        <span class="qchev" id="qc_${q.id}">▼</span>
+  questionDefs.blocs.forEach(bloc => {
+    const n = bloc.questions.length;
+    html += `<div class="q-bloc" id="bloc_${bloc.id}">
+      <div class="q-bloc-hd" onclick="toggleBloc(${bloc.id})">
+        <span class="q-bloc-icon">${bloc.icone}</span>
+        <span class="q-bloc-title">${esc(bloc.titre)}</span>
+        <span class="q-bloc-badge" id="bbadge_${bloc.id}">0/${n}</span>
+        <span class="q-bloc-chev">▼</span>
       </div>
-      <div class="qbody" id="qb_${q.id}">
-        <div class="fgroup">${field}<div class="fhint">${esc(q.hint)}</div></div>
+      <div class="q-bloc-body" id="bbody_${bloc.id}">
+        ${bloc.questions.map(q => `
+          <div class="q-item" id="qitem_${q.id.replace('.','_')}">
+            <div class="q-cb" id="qcb_${q.id.replace('.','_')}" onclick="toggleManualCheck('${q.id}')"></div>
+            <div class="q-item-content">
+              <div class="q-item-text">${esc(q.texte)}</div>
+              <div class="q-item-answer" id="qans_${q.id.replace('.','_')}"></div>
+            </div>
+          </div>`).join('')}
       </div>
     </div>`;
   });
   document.getElementById('qBody').innerHTML = html;
 }
 
-function toggleQ(id) {
-  const body = document.getElementById('qb_' + id);
-  const chev = document.getElementById('qc_' + id);
+function toggleBloc(id) {
+  const body = document.getElementById('bbody_' + id);
+  const hd   = body?.previousElementSibling;
   if (!body) return;
   body.classList.toggle('open');
-  if (chev) chev.textContent = body.classList.contains('open') ? '▲' : '▼';
+  if (hd) hd.classList.toggle('open');
 }
 
-function onQInput(id) {
-  const el = document.getElementById(id);
-  const num = document.getElementById('qn_' + id);
-  if (!el) return;
-  el.classList.remove('missing', 'filled');
-  if (el.value.trim()) el.classList.add('filled');
-  if (num) num.className = el.value.trim() ? 'qnum filled' : 'qnum';
-  updateQBadge();
+function toggleManualCheck(qid) {
+  if (answeredQuestions[qid]) {
+    delete answeredQuestions[qid];
+    _setCheckUI(qid, false, '');
+  } else {
+    answeredQuestions[qid] = '✓ (coché manuellement)';
+    _setCheckUI(qid, true, '✓ coché manuellement');
+  }
+  const blocId = parseInt(qid.split('.')[0]);
+  updateBlocBadge(blocId);
+  updateQProgress();
 }
 
-function updateQBadge() {
-  let count = 0;
-  questionDefs.forEach(q => {
-    const el = document.getElementById(q.id);
-    if (el && el.value.trim()) count++;
+function applyAnswers(newAnswers) {
+  Object.assign(answeredQuestions, newAnswers);
+  questionDefs.blocs?.forEach(bloc => {
+    let count = 0;
+    bloc.questions.forEach(q => {
+      if (answeredQuestions[q.id]) {
+        _setCheckUI(q.id, true, answeredQuestions[q.id]);
+        count++;
+      }
+    });
+    _setBlocBadge(bloc, count);
   });
-  const b = document.getElementById('qBadge');
-  b.textContent = count + ' / 7';
-  b.className = count === 7 ? 'badge ok' : 'badge';
+  updateQProgress();
+}
+
+function _setCheckUI(qid, checked, answerText) {
+  const safeId = qid.replace('.', '_');
+  const cb   = document.getElementById('qcb_'  + safeId);
+  const ans  = document.getElementById('qans_' + safeId);
+  const item = document.getElementById('qitem_'+ safeId);
+  if (cb)   cb.className   = checked ? 'q-cb checked' : 'q-cb';
+  if (item) item.className = checked ? 'q-item answered' : 'q-item';
+  if (ans)  ans.textContent = checked ? answerText : '';
+}
+
+function _setBlocBadge(bloc, count) {
+  const badge = document.getElementById('bbadge_' + bloc.id);
+  if (!badge) return;
+  badge.textContent = `${count}/${bloc.questions.length}`;
+  badge.className = count === bloc.questions.length ? 'q-bloc-badge full'
+                  : count > 0                       ? 'q-bloc-badge partial'
+                  :                                   'q-bloc-badge';
+}
+
+function updateBlocBadge(blocId) {
+  const bloc = questionDefs.blocs?.find(b => b.id === blocId);
+  if (!bloc) return;
+  const count = bloc.questions.filter(q => answeredQuestions[q.id]).length;
+  _setBlocBadge(bloc, count);
+}
+
+function updateQProgress() {
+  const total    = questionDefs.blocs?.reduce((s, b) => s + b.questions.length, 0) || 65;
+  const answered = Object.keys(answeredQuestions).length;
+  const pct      = total > 0 ? Math.round(answered / total * 100) : 0;
+  const fill  = document.getElementById('qProgressFill');
+  const label = document.getElementById('qProgressLabel');
+  const badge = document.getElementById('qBadge');
+  if (fill)  fill.style.width = pct + '%';
+  if (label) label.textContent = `${answered} / ${total} (${pct}%)`;
+  if (badge) {
+    badge.textContent = `${answered} / ${total}`;
+    badge.className   = pct === 100 ? 'badge ok' : answered > 0 ? 'badge' : 'badge';
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -742,14 +801,19 @@ async function generateCadrage() {
   if (!apiKey) { openConfig(); alert('Veuillez saisir votre clé API Anthropic.'); return; }
 
   const questionnaire = {};
-  questionDefs.forEach(q => {
-    const el = document.getElementById(q.id);
-    questionnaire[q.id] = el ? el.value.trim() : '';
-  });
+  if (questionDefs.blocs) {
+    questionDefs.blocs.forEach(bloc => {
+      const blocData = {};
+      bloc.questions.forEach(q => {
+        if (answeredQuestions[q.id]) blocData[q.texte] = answeredQuestions[q.id];
+      });
+      if (Object.keys(blocData).length > 0) questionnaire[bloc.titre] = blocData;
+    });
+  }
 
-  const filledCount = Object.values(questionnaire).filter(v => v).length;
+  const filledCount = Object.keys(answeredQuestions).length;
   if (filledCount === 0) {
-    alert('Veuillez remplir au moins une question avant de générer.'); return;
+    alert('Veuillez répondre à au moins une question avant de générer.'); return;
   }
 
   goStep(2);

@@ -1,58 +1,190 @@
-[
-  {
-    "id": "q1",
-    "title": "Projet — Demande initiale",
-    "sub": "Intitulé du projet ou de la demande",
-    "ph": "Nom ou intitulé court du projet...",
-    "tag": "input",
-    "hint": "Ex. « Optimiser le traitement des demandes »"
+{
+  "meta": {
+    "title": "Questions de cadrage — Problématique métier",
+    "version": "1.0",
+    "date": "2026-04-02",
+    "author": "Mat — 574 / FAN",
+    "total_questions": 65,
+    "total_blocs": 15,
+    "description": "Liste exhaustive de questions génériques pour cadrer n'importe quelle problématique métier."
   },
-  {
-    "id": "q2",
-    "title": "Contexte — Origine de la demande",
-    "sub": "Qu'est-ce qui a déclenché cette demande ?",
-    "ph": "Décrivez l'élément déclencheur...",
-    "tag": "textarea",
-    "hint": "Événement, irritant, opportunité, contrainte."
-  },
-  {
-    "id": "q3",
-    "title": "Finalité — Objectif N+1",
-    "sub": "Vous voulez… dans quel but ?",
-    "ph": "Quel est l'objectif supérieur ?",
-    "tag": "textarea",
-    "hint": "Pour aboutir à quoi ?"
-  },
-  {
-    "id": "q4",
-    "title": "Résultats attendus",
-    "sub": "À quoi saurez-vous que c'est atteint ?",
-    "ph": "Indicateurs de succès, résultats concrets...",
-    "tag": "textarea",
-    "hint": "Mesures, critères, preuves, livrables."
-  },
-  {
-    "id": "q5",
-    "title": "Acteurs directement concernés",
-    "sub": "Qui est impacté ?",
-    "ph": "Personnes, équipes, services impactés...",
-    "tag": "textarea",
-    "hint": "Utilisateurs finaux, opérationnels, managers."
-  },
-  {
-    "id": "q6",
-    "title": "Réseau intervenants",
-    "sub": "Alliés, opposants, décideurs…",
-    "ph": "Alliés, opposants, décideurs...",
-    "tag": "textarea",
-    "hint": "Qui facilite ? Qui freine ? Qui arbitre ?"
-  },
-  {
-    "id": "q7",
-    "title": "Enjeux spécifiques",
-    "sub": "Gains / pertes, enjeux stratégiques…",
-    "ph": "Enjeux stratégiques, opérationnels...",
-    "tag": "textarea",
-    "hint": "Risques, dépendances, contraintes."
-  }
-]
+  "blocs": [
+    {
+      "id": 1,
+      "titre": "Demande initiale",
+      "icone": "📋",
+      "questions": [
+        { "id": "1.1", "texte": "Quelle est la demande telle que formulée par le demandeur ?" },
+        { "id": "1.2", "texte": "Quel est le livrable ou le résultat concret attendu ?" },
+        { "id": "1.3", "texte": "Quelle est la formulation du problème en une phrase ?" }
+      ]
+    },
+    {
+      "id": 2,
+      "titre": "Contexte & origine",
+      "icone": "📍",
+      "questions": [
+        { "id": "2.1", "texte": "Qu'est-ce qui a déclenché cette demande (événement, dysfonctionnement, opportunité, directive) ?" },
+        { "id": "2.2", "texte": "Depuis quand le problème existe-t-il ?" },
+        { "id": "2.3", "texte": "Quelle est son évolution récente (s'aggrave, stable, cyclique) ?" },
+        { "id": "2.4", "texte": "Y a-t-il eu des tentatives précédentes pour y répondre ?" },
+        { "id": "2.5", "texte": "Si oui, pourquoi ont-elles échoué ou été insuffisantes ?" },
+        { "id": "2.6", "texte": "Existe-t-il un benchmark interne ou externe de référence ?" }
+      ]
+    },
+    {
+      "id": 3,
+      "titre": "Finalité & objectif supérieur",
+      "icone": "🎯",
+      "questions": [
+        { "id": "3.1", "texte": "Cette demande sert quel objectif stratégique de niveau supérieur (N+1, N+2) ?" },
+        { "id": "3.2", "texte": "En quoi est-ce aligné avec la feuille de route ou le plan stratégique en cours ?" },
+        { "id": "3.3", "texte": "Que se passe-t-il si on ne fait rien ?" }
+      ]
+    },
+    {
+      "id": 4,
+      "titre": "Résultats attendus & critères de succès",
+      "icone": "✅",
+      "questions": [
+        { "id": "4.1", "texte": "Quels sont les livrables attendus (documents, outils, process, décisions) ?" },
+        { "id": "4.2", "texte": "Quels indicateurs mesurables permettront de dire que c'est réussi ?" },
+        { "id": "4.3", "texte": "Quel est le seuil minimum acceptable vs le résultat idéal ?" },
+        { "id": "4.4", "texte": "À quelle échéance ces résultats doivent-ils être visibles ?" },
+        { "id": "4.5", "texte": "Qui valide que le résultat est atteint ?" }
+      ]
+    },
+    {
+      "id": 5,
+      "titre": "Périmètre & limites",
+      "icone": "🔒",
+      "questions": [
+        { "id": "5.1", "texte": "Quel est le périmètre géographique, organisationnel, fonctionnel ?" },
+        { "id": "5.2", "texte": "Quels sont les sujets explicitement hors scope ?" },
+        { "id": "5.3", "texte": "Y a-t-il des interfaces avec d'autres projets ou chantiers en cours ?" },
+        { "id": "5.4", "texte": "Le périmètre est-il figé ou susceptible d'évoluer (et sous quelles conditions) ?" }
+      ]
+    },
+    {
+      "id": 6,
+      "titre": "Acteurs & parties prenantes",
+      "icone": "👥",
+      "questions": [
+        { "id": "6.1", "texte": "Qui est le commanditaire (sponsor) ?" },
+        { "id": "6.2", "texte": "Qui est le demandeur opérationnel ?" },
+        { "id": "6.3", "texte": "Qui sont les bénéficiaires directs (utilisateurs finaux) ?" },
+        { "id": "6.4", "texte": "Qui sont les contributeurs nécessaires (experts métier, support technique) ?" },
+        { "id": "6.5", "texte": "Qui sont les décideurs aux jalons clés ?" },
+        { "id": "6.6", "texte": "Y a-t-il des opposants identifiés ou des résistances pressenties ?" },
+        { "id": "6.7", "texte": "Quels alliés peuvent faciliter le projet ?" },
+        { "id": "6.8", "texte": "Quel est le niveau d'adhésion actuel des parties prenantes ?" }
+      ]
+    },
+    {
+      "id": 7,
+      "titre": "Enjeux & risques",
+      "icone": "⚠️",
+      "questions": [
+        { "id": "7.1", "texte": "Quels sont les gains attendus (financiers, organisationnels, image, conformité) ?" },
+        { "id": "7.2", "texte": "Quelles sont les pertes potentielles en cas d'échec ?" },
+        { "id": "7.3", "texte": "Y a-t-il des enjeux politiques ou de pouvoir ?" },
+        { "id": "7.4", "texte": "Quels sont les risques identifiés (techniques, humains, juridiques, calendaires) ?" },
+        { "id": "7.5", "texte": "Quel est le niveau de criticité du sujet (nice-to-have → vital) ?" },
+        { "id": "7.6", "texte": "Y a-t-il des dépendances externes non maîtrisées ?" }
+      ]
+    },
+    {
+      "id": 8,
+      "titre": "Contraintes",
+      "icone": "🔐",
+      "questions": [
+        { "id": "8.1", "texte": "Quel est le budget disponible ou l'enveloppe cible ?" },
+        { "id": "8.2", "texte": "Quelle est l'échéance impérative (date butoir, événement déclencheur) ?" },
+        { "id": "8.3", "texte": "Y a-t-il des contraintes réglementaires, normatives ou juridiques ?" },
+        { "id": "8.4", "texte": "Quelles contraintes techniques (systèmes existants, compatibilité, sécurité) ?" },
+        { "id": "8.5", "texte": "Quelles contraintes organisationnelles (disponibilité des équipes, charge actuelle) ?" },
+        { "id": "8.6", "texte": "Y a-t-il des contraintes culturelles ou de conduite du changement ?" }
+      ]
+    },
+    {
+      "id": 9,
+      "titre": "Données & état des lieux",
+      "icone": "📊",
+      "questions": [
+        { "id": "9.1", "texte": "Quelles données existent déjà sur le sujet (rapports, chiffres, études) ?" },
+        { "id": "9.2", "texte": "Sont-elles fiables, à jour, accessibles ?" },
+        { "id": "9.3", "texte": "Quels processus ou outils sont déjà en place aujourd'hui ?" },
+        { "id": "9.4", "texte": "Quel est l'écart entre la situation actuelle et la situation souhaitée ?" },
+        { "id": "9.5", "texte": "Existe-t-il une cartographie des flux ou processus concernés ?" }
+      ]
+    },
+    {
+      "id": 10,
+      "titre": "Solutions & options envisagées",
+      "icone": "💡",
+      "questions": [
+        { "id": "10.1", "texte": "Des pistes de solution ont-elles déjà été envisagées ?" },
+        { "id": "10.2", "texte": "Y a-t-il des partis pris techniques ou méthodologiques imposés ?" },
+        { "id": "10.3", "texte": "Le demandeur a-t-il une préférence entre faire, faire-faire, ou acheter ?" },
+        { "id": "10.4", "texte": "Y a-t-il des solutions du marché connues (logiciels, prestataires, bonnes pratiques) ?" }
+      ]
+    },
+    {
+      "id": 11,
+      "titre": "Temporalité & jalons",
+      "icone": "📅",
+      "questions": [
+        { "id": "11.1", "texte": "Quelle est la date de démarrage souhaitée ?" },
+        { "id": "11.2", "texte": "Quels sont les jalons intermédiaires attendus ?" },
+        { "id": "11.3", "texte": "Y a-t-il un phasage imposé (pilote → déploiement, MVP → V2) ?" },
+        { "id": "11.4", "texte": "Quelle est la durée prévisionnelle du projet ?" },
+        { "id": "11.5", "texte": "Y a-t-il des fenêtres de tir à ne pas manquer (saisonnalité, agenda politique) ?" }
+      ]
+    },
+    {
+      "id": 12,
+      "titre": "Gouvernance & pilotage",
+      "icone": "🗓️",
+      "questions": [
+        { "id": "12.1", "texte": "Qui pilote le projet au quotidien ?" },
+        { "id": "12.2", "texte": "Quelle est l'instance de décision (COPIL, CODIR, comité ad hoc) ?" },
+        { "id": "12.3", "texte": "À quelle fréquence les points de suivi sont-ils prévus ?" },
+        { "id": "12.4", "texte": "Quels sont les circuits de validation et d'arbitrage ?" },
+        { "id": "12.5", "texte": "Comment les changements de périmètre seront-ils gérés ?" }
+      ]
+    },
+    {
+      "id": 13,
+      "titre": "Communication & conduite du changement",
+      "icone": "📣",
+      "questions": [
+        { "id": "13.1", "texte": "Qui doit être informé et à quel moment ?" },
+        { "id": "13.2", "texte": "Quel est le plan de communication envisagé (interne, externe) ?" },
+        { "id": "13.3", "texte": "Y a-t-il un besoin de formation ou d'accompagnement des utilisateurs ?" },
+        { "id": "13.4", "texte": "Quels sont les freins au changement identifiés ?" },
+        { "id": "13.5", "texte": "Comment mesurer l'adoption ?" }
+      ]
+    },
+    {
+      "id": 14,
+      "titre": "Pérennité & après-projet",
+      "icone": "♻️",
+      "questions": [
+        { "id": "14.1", "texte": "Qui assurera la maintenance ou le suivi après la livraison ?" },
+        { "id": "14.2", "texte": "Quel est le modèle de run envisagé (équipe dédiée, intégration au quotidien, prestataire) ?" },
+        { "id": "14.3", "texte": "Comment capitaliser les apprentissages ?" },
+        { "id": "14.4", "texte": "La solution doit-elle être réplicable ou extensible à d'autres périmètres ?" }
+      ]
+    },
+    {
+      "id": 15,
+      "titre": "Clarification transversale",
+      "icone": "🔮",
+      "questions": [
+        { "id": "15.1", "texte": "Y a-t-il des non-dits ou des sujets sensibles à connaître ?" },
+        { "id": "15.2", "texte": "Qu'est-ce qui n'a pas été dit mais qui est important ?" },
+        { "id": "15.3", "texte": "Si vous deviez résumer en une phrase ce qui vous empêche de dormir sur ce sujet, ce serait quoi ?" }
+      ]
+    }
+  ]
+}
