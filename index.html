@@ -55,6 +55,7 @@
           <button class="method-btn" id="mbAudio" onclick="switchMethod('audio')">🎙 Audio</button>
           <button class="method-btn" id="mbPaste" onclick="switchMethod('paste')">📋 Coller du texte</button>
           <button class="method-btn" id="mbManual" onclick="switchMethod('manual')">✏ Saisie manuelle</button>
+          <button class="method-btn" id="mbLive" onclick="switchMethod('live')">🎙 Dictée en direct</button>
         </div>
 
         <!-- PDF/Text Zone -->
@@ -130,6 +131,26 @@
           <div class="gap8 mt12">
             <button class="btn primary" id="transcribeBtn" disabled onclick="runAnalysisFromAudio()">▶ Transcrire et remplir le questionnaire</button>
           </div>
+        </div>
+
+        <!-- Live Dictation Zone -->
+        <div id="zoneLive" style="display:none;">
+          <div class="live-controls">
+            <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="Démarrer / Arrêter la dictée">🎤</button>
+            <div>
+              <div id="micStatus" class="mic-status">Cliquez pour commencer la dictée</div>
+              <div id="liveInterim" class="live-interim"></div>
+            </div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Transcription (éditable avant analyse)</label>
+            <textarea class="ftextarea" id="liveTranscript" placeholder="La transcription apparaîtra ici au fil de votre parole..." style="min-height: 140px;"></textarea>
+          </div>
+          <div class="gap8 mt12">
+            <button class="btn sm danger" onclick="clearLive()">✕ Effacer</button>
+            <button class="btn primary" onclick="runAnalysisFromLive()">▶ Analyser et remplir le questionnaire</button>
+          </div>
+          <div class="fhint" style="margin-top:8px;">⚠ Fonctionne sur Chrome et Edge. Langue détectée : français.</div>
         </div>
 
         <!-- Manual Zone -->

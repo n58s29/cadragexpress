@@ -202,6 +202,40 @@
       cursor: pointer;
       color-scheme: dark;
     }
+    select.finput option {
+      background-color: #1a2332;
+      color: #e8edf4;
+    }
+    /* ═══════ LIVE DICTATION ═══════ */
+    .live-controls {
+      display: flex; align-items: center; gap: 20px;
+      padding: 16px 0 12px;
+    }
+    .mic-btn {
+      flex-shrink: 0;
+      width: 68px; height: 68px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.12);
+      background: var(--surface-2);
+      font-size: 26px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .mic-btn:hover { border-color: rgba(255,255,255,0.25); background: var(--surface-3); }
+    .mic-btn.recording {
+      background: rgba(220,88,42,0.15);
+      border-color: var(--saumon);
+      animation: pulse-mic 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse-mic {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220,88,42,0.45); }
+      50%       { box-shadow: 0 0 0 14px rgba(220,88,42,0); }
+    }
+    .mic-status { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+    .live-interim {
+      font-size: 13px; color: var(--text-tertiary);
+      font-style: italic; margin-top: 4px; min-height: 18px;
+    }
+
     .audio-compat-badge {
       display: inline-block; margin-top: 5px;
       font-size: 11px; font-weight: 500;

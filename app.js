@@ -294,14 +294,101 @@ function goStep(n) {
    METHOD SWITCH
    ═══════════════════════════════════════ */
 function switchMethod(m) {
-  document.getElementById('mbPdf').className = m === 'pdf' ? 'method-btn active' : 'method-btn';
-  document.getElementById('mbAudio').className = m === 'audio' ? 'method-btn active' : 'method-btn';
-  document.getElementById('mbPaste').className = m === 'paste' ? 'method-btn active' : 'method-btn';
-  document.getElementById('mbManual').className = m === 'manual' ? 'method-btn active' : 'method-btn';
-  document.getElementById('zonePdf').style.display = m === 'pdf' ? 'block' : 'none';
-  document.getElementById('zoneAudio').style.display = m === 'audio' ? 'block' : 'none';
-  document.getElementById('zonePaste').style.display = m === 'paste' ? 'block' : 'none';
-  document.getElementById('zoneManual').style.display = m === 'manual' ? 'block' : 'none';
+  ['pdf','audio','paste','manual','live'].forEach(id => {
+    document.getElementById('mb' + id.charAt(0).toUpperCase() + id.slice(1)).className =
+      m === id ? 'method-btn active' : 'method-btn';
+    document.getElementById('zone' + id.charAt(0).toUpperCase() + id.slice(1)).style.display =
+      m === id ? 'block' : 'none';
+  });
+  if (m !== 'live') stopMic();
+}
+
+/* ═══════════════════════════════════════
+   LIVE DICTATION (Web Speech API)
+   ═══════════════════════════════════════ */
+let recognition = null;
+let liveRecording = false;
+let liveTranscriptFinal = '';
+
+function toggleMic() {
+  liveRecording ? stopMic() : startMic();
+}
+
+function startMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    alert('La reconnaissance vocale n\'est pas supportée par ce navigateur.\nUtilisez Chrome ou Edge.');
+    return;
+  }
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'fr-FR';
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        liveTranscriptFinal += e.results[i][0].transcript + ' ';
+        document.getElementById('liveTranscript').value = liveTranscriptFinal;
+      } else {
+        interim += e.results[i][0].transcript;
+      }
+    }
+    document.getElementById('liveInterim').textContent = interim;
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed') {
+      document.getElementById('micStatus').textContent = '⚠ Accès au microphone refusé.';
+    } else {
+      document.getElementById('micStatus').textContent = '⚠ Erreur : ' + e.error;
+    }
+    stopMic();
+  };
+
+  recognition.onend = () => {
+    // Redémarre automatiquement si toujours en cours d'enregistrement
+    if (liveRecording) {
+      try { recognition.start(); } catch (_) {}
+    }
+  };
+
+  liveRecording = true;
+  recognition.start();
+  document.getElementById('micBtn').classList.add('recording');
+  document.getElementById('micBtn').textContent = '⏹';
+  document.getElementById('micStatus').textContent = '🔴 Enregistrement en cours — parlez...';
+}
+
+function stopMic() {
+  liveRecording = false;
+  if (recognition) { try { recognition.stop(); } catch (_) {} recognition = null; }
+  const btn = document.getElementById('micBtn');
+  const status = document.getElementById('micStatus');
+  if (!btn) return;
+  btn.classList.remove('recording');
+  btn.textContent = '🎤';
+  status.textContent = liveTranscriptFinal
+    ? '✓ Enregistrement terminé — vérifiez la transcription ci-dessous.'
+    : 'Cliquez pour commencer la dictée';
+  document.getElementById('liveInterim').textContent = '';
+}
+
+function clearLive() {
+  stopMic();
+  liveTranscriptFinal = '';
+  document.getElementById('liveTranscript').value = '';
+  document.getElementById('micStatus').textContent = 'Cliquez pour commencer la dictée';
+}
+
+function runAnalysisFromLive() {
+  const text = document.getElementById('liveTranscript').value.trim();
+  if (!text) { alert('La transcription est vide. Parlez d\'abord !'); return; }
+  // Bascule vers zonePaste pour réutiliser le flux d'analyse et la barre de progression
+  switchMethod('paste');
+  document.getElementById('pasteArea').value = text;
+  runAnalysisFromPaste();
 }
 
 /* ═══════════════════════════════════════
