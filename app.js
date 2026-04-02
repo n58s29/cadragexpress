@@ -4,6 +4,9 @@
 let curStep = 1;
 let loadedFileText = '';
 let loadedFileName = '';
+let loadedAudioBase64 = '';
+let loadedAudioMediaType = '';
+let loadedAudioFileName = '';
 let lastSynthHtml = '';
 let lastMockHtml = '';
 let lastCadrageHtml = '';
@@ -268,9 +271,11 @@ function goStep(n) {
    ═══════════════════════════════════════ */
 function switchMethod(m) {
   document.getElementById('mbPdf').className = m === 'pdf' ? 'method-btn active' : 'method-btn';
+  document.getElementById('mbAudio').className = m === 'audio' ? 'method-btn active' : 'method-btn';
   document.getElementById('mbPaste').className = m === 'paste' ? 'method-btn active' : 'method-btn';
   document.getElementById('mbManual').className = m === 'manual' ? 'method-btn active' : 'method-btn';
   document.getElementById('zonePdf').style.display = m === 'pdf' ? 'block' : 'none';
+  document.getElementById('zoneAudio').style.display = m === 'audio' ? 'block' : 'none';
   document.getElementById('zonePaste').style.display = m === 'paste' ? 'block' : 'none';
   document.getElementById('zoneManual').style.display = m === 'manual' ? 'block' : 'none';
 }
@@ -279,15 +284,18 @@ function switchMethod(m) {
    FILE HANDLING
    ═══════════════════════════════════════ */
 function initDragDrop() {
-  const dz = document.getElementById('pdfDropZone');
+  setupDropZone('pdfDropZone', f => processFile(f));
+  setupDropZone('audioDropZone', f => processAudioFile(f));
+}
+
+function setupDropZone(id, handler) {
+  const dz = document.getElementById(id);
   dz.addEventListener('dragenter', e => { e.preventDefault(); dz.classList.add('dragover'); });
   dz.addEventListener('dragover', e => { e.preventDefault(); });
   dz.addEventListener('dragleave', () => { dz.classList.remove('dragover'); });
   dz.addEventListener('drop', e => {
     e.preventDefault(); dz.classList.remove('dragover');
-    if (e.dataTransfer.files.length > 0) {
-      processFile(e.dataTransfer.files[0]);
-    }
+    if (e.dataTransfer.files.length > 0) handler(e.dataTransfer.files[0]);
   });
 }
 
@@ -362,6 +370,124 @@ function clearFile() {
   document.getElementById('analyzeBtn').disabled = true;
   setStatus('fStatus', '');
   document.getElementById('filePicker').value = '';
+}
+
+/* ═══════════════════════════════════════
+   AUDIO HANDLING
+   ═══════════════════════════════════════ */
+const AUDIO_MEDIA_TYPES = {
+  mp3: 'audio/mpeg', wav: 'audio/wav', m4a: 'audio/mp4',
+  mp4: 'audio/mp4', ogg: 'audio/ogg', webm: 'audio/webm',
+  aac: 'audio/aac', flac: 'audio/flac'
+};
+const AUDIO_MAX_MB = 25;
+
+function handleAudioSelect(input) {
+  if (input.files && input.files.length > 0) processAudioFile(input.files[0]);
+}
+
+async function processAudioFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const mediaType = AUDIO_MEDIA_TYPES[ext];
+  if (!mediaType) {
+    setStatus('aStatus', '✕ Format non supporté : .' + ext); return;
+  }
+  const sizeMB = file.size / 1024 / 1024;
+  if (sizeMB > AUDIO_MAX_MB) {
+    setStatus('aStatus', `✕ Fichier trop lourd (${sizeMB.toFixed(1)} Mo). Maximum : ${AUDIO_MAX_MB} Mo.`); return;
+  }
+
+  setStatus('aStatus', '📖 Lecture du fichier audio...');
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    loadedAudioBase64 = btoa(binary);
+    loadedAudioMediaType = mediaType;
+    loadedAudioFileName = file.name;
+    showAudioLoaded(sizeMB);
+  } catch (err) {
+    setStatus('aStatus', '✕ Erreur lecture : ' + err.message);
+  }
+}
+
+function showAudioLoaded(sizeMB) {
+  document.getElementById('audioDropZone').style.display = 'none';
+  document.getElementById('audioLoaded').style.display = 'flex';
+  document.getElementById('loadedAudioName').textContent = loadedAudioFileName;
+  document.getElementById('loadedAudioMeta').textContent = `${sizeMB.toFixed(2)} Mo — Prêt pour transcription`;
+  document.getElementById('transcribeBtn').disabled = false;
+  setStatus('aStatus', '');
+}
+
+function clearAudio() {
+  loadedAudioBase64 = ''; loadedAudioMediaType = ''; loadedAudioFileName = '';
+  document.getElementById('audioDropZone').style.display = 'block';
+  document.getElementById('audioLoaded').style.display = 'none';
+  document.getElementById('transcribeBtn').disabled = true;
+  setStatus('aStatus', '');
+  document.getElementById('audioPicker').value = '';
+}
+
+async function runAnalysisFromAudio() {
+  if (!loadedAudioBase64) return;
+  const apiKey = document.getElementById('cfgKey').value.trim();
+  if (!apiKey) { openConfig(); alert('Veuillez saisir votre clé API Anthropic.'); return; }
+
+  const prog = document.getElementById('aProg');
+  const fill = document.getElementById('aProgFill');
+  prog.classList.add('active');
+  fill.style.width = '30%';
+  setStatus('aStatus', '🎙 Transcription et analyse par Claude...');
+
+  const prompt = `Tu es un expert en cadrage de projets d'innovation.
+Voici un enregistrement audio (réunion, entretien métier ou expression de besoin).
+
+Transcris l'audio puis extrais les informations pour remplir le questionnaire de cadrage.
+Réponds UNIQUEMENT en JSON strict avec ces 7 clés.
+Pour chaque clé, donne le texte extrait ou une chaîne vide si l'information est absente :
+{"q1_projet":"","q2_contexte":"","q3_finalite":"","q4_resultats":"","q5_acteurs":"","q6_reseau":"","q7_enjeux":""}`;
+
+  try {
+    fill.style.width = '60%';
+    const content = await callClaudeAPIWithAudio(apiKey, loadedAudioBase64, loadedAudioMediaType, prompt);
+    const extracted = parseJsonSafe(content);
+
+    const mapping = {
+      q1: extracted.q1_projet || '',
+      q2: extracted.q2_contexte || '',
+      q3: extracted.q3_finalite || '',
+      q4: extracted.q4_resultats || '',
+      q5: extracted.q5_acteurs || '',
+      q6: extracted.q6_reseau || '',
+      q7: extracted.q7_enjeux || ''
+    };
+
+    for (const [id, val] of Object.entries(mapping)) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.value = val;
+        el.className = el.className.replace(/ ?missing/g, '').replace(/ ?filled/g, '');
+        if (val.trim()) el.classList.add('filled');
+        else el.classList.add('missing');
+      }
+      const num = document.getElementById('qn_' + id);
+      if (num) num.className = val.trim() ? 'qnum filled' : 'qnum warn';
+    }
+
+    questionDefs.forEach(q => {
+      const qb = document.getElementById('qb_' + q.id);
+      if (qb) qb.classList.add('open');
+    });
+
+    updateQBadge();
+    fill.style.width = '100%';
+    setStatus('aStatus', '✓ Questionnaire rempli depuis l\'audio. Vérifiez les champs en orange.');
+  } catch (err) {
+    setStatus('aStatus', '✕ Erreur : ' + err.message);
+  }
+  setTimeout(() => { prog.classList.remove('active'); fill.style.width = '0%'; }, 2000);
 }
 
 /* ═══════════════════════════════════════
@@ -697,6 +823,48 @@ async function callClaudeAPI(apiKey, userPrompt) {
 
   const data = await response.json();
 
+  if (data.content && data.content.length > 0) {
+    return data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+  }
+  throw new Error('Réponse vide ou structure inattendue');
+}
+
+async function callClaudeAPIWithAudio(apiKey, audioBase64, mediaType, textPrompt) {
+  const model = document.getElementById('cfgModel').value.trim() || 'claude-sonnet-4-20250514';
+  const maxTokens = parseInt(document.getElementById('cfgMaxTokens').value) || 8192;
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: model,
+      max_tokens: maxTokens,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'document',
+              source: { type: 'base64', media_type: mediaType, data: audioBase64 }
+            },
+            { type: 'text', text: textPrompt }
+          ]
+        }
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`HTTP ${response.status}: ${errText.substring(0, 200)}`);
+  }
+
+  const data = await response.json();
   if (data.content && data.content.length > 0) {
     return data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
   }

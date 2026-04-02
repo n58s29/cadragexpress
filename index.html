@@ -52,6 +52,7 @@
       <div class="card-bd">
         <div class="method-toggle">
           <button class="method-btn active" id="mbPdf" onclick="switchMethod('pdf')">📄 PDF / Fichier texte</button>
+          <button class="method-btn" id="mbAudio" onclick="switchMethod('audio')">🎙 Audio</button>
           <button class="method-btn" id="mbPaste" onclick="switchMethod('paste')">📋 Coller du texte</button>
           <button class="method-btn" id="mbManual" onclick="switchMethod('manual')">✏ Saisie manuelle</button>
         </div>
@@ -96,6 +97,38 @@
           </div>
           <div class="gap8 mt12">
             <button class="btn primary" onclick="runAnalysisFromPaste()">▶ Analyser et remplir le questionnaire</button>
+          </div>
+        </div>
+
+        <!-- Audio Zone -->
+        <div id="zoneAudio" style="display:none;">
+          <div id="audioDropZone" class="dropzone" onclick="document.getElementById('audioPicker').click()">
+            <span class="dz-icon">🎙</span>
+            <h4>Déposez un fichier audio ici</h4>
+            <p>ou cliquez pour sélectionner</p>
+            <p class="sub">MP3, WAV, M4A, OGG, WEBM — L'audio sera transcrit et analysé par Claude</p>
+          </div>
+          <input id="audioPicker" type="file" style="display:none" accept=".mp3,.wav,.m4a,.ogg,.webm,.mp4,.aac,.flac" onchange="handleAudioSelect(this)" />
+
+          <div id="audioLoaded" class="file-loaded" style="display:none;">
+            <span class="fl-icon">🎙</span>
+            <div class="fl-info">
+              <div class="fl-name" id="loadedAudioName">audio.mp3</div>
+              <div class="fl-meta" id="loadedAudioMeta">Prêt pour transcription</div>
+            </div>
+            <div class="fl-actions">
+              <button class="btn sm" onclick="document.getElementById('audioPicker').click()">🔄 Changer</button>
+              <button class="btn sm danger" onclick="clearAudio()">✕ Retirer</button>
+            </div>
+          </div>
+
+          <div class="progress-wrap" id="aProg">
+            <div class="progress-fill" id="aProgFill"></div>
+          </div>
+          <div class="status-msg" id="aStatus"></div>
+
+          <div class="gap8 mt12">
+            <button class="btn primary" id="transcribeBtn" disabled onclick="runAnalysisFromAudio()">▶ Transcrire et remplir le questionnaire</button>
           </div>
         </div>
 
