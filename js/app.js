@@ -258,6 +258,35 @@ function onModelChange() {
    ═══════════════════════════════════════ */
 function openConfig() { document.getElementById('configOverlay').classList.add('open'); }
 function closeConfig() { document.getElementById('configOverlay').classList.remove('open'); updateCfg(); }
+
+function clearAllData() {
+  if (!confirm('Supprimer toutes les données du projet ?\n\nCela effacera le questionnaire, les fichiers chargés et les livrables générés.\nLa configuration (clé API, modèle, agents) sera conservée.')) return;
+  // Questionnaire
+  answeredQuestions = {};
+  renderQuestionnaire();
+  updateQProgress();
+  // Fichier texte / PDF
+  clearFile();
+  // Audio
+  clearAudio();
+  // Texte collé
+  const pasteArea = document.getElementById('pasteArea');
+  if (pasteArea) pasteArea.value = '';
+  // Dictée live
+  const liveTranscript = document.getElementById('liveTranscript');
+  if (liveTranscript) liveTranscript.value = '';
+  // Livrables générés
+  lastSynthHtml = ''; lastMockHtml = ''; lastCadrageHtml = '';
+  ['synthFrame','mockFrame','cadrageFrame'].forEach(id => {
+    const f = document.getElementById(id);
+    if (f) { f.srcdoc = ''; f.src = ''; }
+  });
+  document.getElementById('genStatusCard').style.display = 'none';
+  // Retour étape 1
+  goStep(1);
+  closeConfig();
+  showToast('Données effacées');
+}
 function toggleKey() {
   const el = document.getElementById('cfgKey');
   el.type = el.type === 'password' ? 'text' : 'password';
