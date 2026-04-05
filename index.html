@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cadrage Express v7 — FAN</title>
+  <title>Cadrage Express v8 — Fabrique de l'Adoption Numérique</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -12,7 +12,11 @@
 <nav>
   <div class="nav-brand">
     <div class="logo-icon">CE</div>
-    <h1>Cadrage Express <span class="version">v7</span></h1>
+    <h1>Cadrage Express <span class="version">v8</span></h1>
+  </div>
+  <div class="nav-eyebrow">
+    <span class="point-vivant"></span>
+    Fabrique de l'Adoption Numérique
   </div>
   <div class="nav-right">
     <div class="nav-status">
@@ -44,10 +48,10 @@
       ⚠ <strong>Configuration requise</strong> — Ouvrez le panneau ⚙ Configuration pour saisir votre clé API Anthropic.
     </div>
 
-    <!-- Input Mode -->
+    <!-- Source -->
     <div class="card">
       <div class="card-hd">
-        <h3>📥 Source du besoin</h3>
+        <h3>Source du besoin</h3>
       </div>
       <div class="card-bd">
         <!-- Sélecteur niveau 1 : Audio / Texte -->
@@ -159,12 +163,12 @@
             <button class="btn sm danger" onclick="clearLive()">✕ Effacer</button>
             <button class="btn primary" onclick="runAnalysisFromLive()">▶ Analyser et remplir le questionnaire</button>
           </div>
-          <div class="fhint" style="margin-top:8px;">⚠ Fonctionne sur Chrome et Edge. Langue détectée : français.</div>
+          <div class="fhint" style="margin-top:8px;">Fonctionne sur Chrome et Edge. Langue détectée : français.</div>
         </div>
 
         <!-- Manual Zone -->
         <div id="zoneManual" style="display:none;">
-          <div class="note-box">✏ Remplissez directement le questionnaire ci-dessous.</div>
+          <div class="note-box">Remplissez directement le questionnaire ci-dessous.</div>
         </div>
       </div>
     </div>
@@ -172,7 +176,7 @@
     <!-- Questionnaire -->
     <div class="card">
       <div class="card-hd">
-        <h3>📋 Questionnaire de cadrage</h3>
+        <h3>Questionnaire de cadrage</h3>
         <span class="badge" id="qBadge">0 / 65</span>
       </div>
       <div class="q-progress-wrap">
@@ -195,7 +199,7 @@
 
     <div class="card" id="genStatusCard" style="display:none;">
       <div class="card-hd">
-        <h3>⚙ Génération en cours</h3>
+        <h3>Génération en cours</h3>
         <span class="badge" id="genStatusBadge">0 / 3</span>
       </div>
       <div class="card-bd">
@@ -238,6 +242,12 @@
     </div>
   </div>
 
+  <!-- Footer branding -->
+  <footer class="fan-footer">
+    <div class="fan-footer-title">Fabrique de l'Adoption Numérique — e.SNCF Solutions</div>
+    <div class="fan-footer-filet"></div>
+  </footer>
+
 </div>
 
 <!-- ═══════ CONFIG OVERLAY ═══════ -->
@@ -245,7 +255,7 @@
   <div class="config-backdrop" onclick="closeConfig()"></div>
   <div class="config-panel">
     <div class="config-panel-hd">
-      <h2>⚙ Configuration</h2>
+      <h2>Configuration</h2>
       <button class="btn-close-cfg" onclick="closeConfig()">✕</button>
     </div>
     <div class="config-panel-bd">
@@ -280,7 +290,7 @@
       </div>
 
       <div class="cfg-section">
-        <div class="cfg-section-title">Agents Experts Virtuels <span class="badge" id="agentBadge" style="margin-left:6px;">5 / 5</span></div>
+        <div class="cfg-section-title">Agents Experts Virtuels <span class="badge" id="agentBadge" style="margin-left:4px;">5 / 5</span></div>
         <div class="fhint" style="margin-bottom:12px;">Chaque agent apporte son expertise au cadrage. Activez/désactivez ou éditez les prompts.</div>
         <div class="agent-grid" id="agentGrid"></div>
       </div>
@@ -289,7 +299,7 @@
         <div class="cfg-section-title">Personnalisation</div>
         <div class="fgroup">
           <label class="flabel">Contexte métier additionnel (optionnel)</label>
-          <textarea class="ftextarea" id="cfgContext" placeholder="Ex: Contexte SNCF, direction TER, contraintes réseau interne..."></textarea>
+          <textarea class="ftextarea" id="cfgContext" placeholder="Ex : contexte SNCF, direction TER, contraintes réseau interne..."></textarea>
           <div class="fhint">Ajouté au prompt système pour contextualiser les livrables.</div>
         </div>
       </div>
@@ -304,7 +314,7 @@
   </div>
 </div>
 
-<div class="toast" id="toast">✓ Copié !</div>
+<div class="toast" id="toast">✓ OK</div>
 
 <script src="js/app.js"></script>
 </body>

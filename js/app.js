@@ -170,9 +170,17 @@ const modelDefs = [
 async function init() {
   try {
     const res = await fetch('data/cadrage-questions.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     questionDefs = await res.json();
   } catch (e) {
     console.error('Impossible de charger cadrage-questions.json :', e);
+    document.getElementById('qBody').innerHTML =
+      `<div class="warn-box" style="margin:16px;">
+        ⚠ <strong>Questionnaire non chargé</strong> — Le fichier <code>data/cadrage-questions.json</code> est inaccessible.<br>
+        Lancez l'application via un serveur HTTP local :<br>
+        <code style="display:block;margin-top:8px;">python -m http.server 8080</code>
+        puis ouvrez <code>http://localhost:8080</code>.
+      </div>`;
   }
   renderQuestionnaire();
   renderAgentGrid();
@@ -625,6 +633,11 @@ async function runAnalysisFromAudio() {
   const apiKey = document.getElementById('cfgKey').value.trim();
   if (!apiKey) { openConfig(); alert('Veuillez saisir votre clé API Anthropic.'); return; }
 
+  if (!questionDefs.blocs || questionDefs.blocs.length === 0) {
+    setStatus('aStatus', '✕ Questionnaire non chargé — lancez via un serveur HTTP local.');
+    return;
+  }
+
   const prog = document.getElementById('aProg');
   const fill = document.getElementById('aProgFill');
   prog.classList.add('active');
@@ -695,6 +708,10 @@ Exemple : {"1.1": "Automatiser les rapports mensuels", "2.1": "Suite à un audit
 async function analyzeText(text, progId = 'fProg', fillId = 'fProgFill', statusId = 'fStatus') {
   const apiKey = document.getElementById('cfgKey').value.trim();
   if (!apiKey) { openConfig(); alert('Veuillez saisir votre clé API Anthropic.'); return; }
+  if (!questionDefs.blocs || questionDefs.blocs.length === 0) {
+    setStatus(statusId, '✕ Questionnaire non chargé — lancez via un serveur HTTP local (voir encart ci-dessous).');
+    return;
+  }
 
   const prog = document.getElementById(progId);
   const fill = document.getElementById(fillId);
