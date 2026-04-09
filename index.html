@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cadrage Express v8 — Fabrique de l'Adoption Numérique</title>
+  <title>Cadrage Express v8</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -14,9 +14,9 @@
     <div class="logo-icon">CE</div>
     <h1>Cadrage Express <span class="version">v8</span></h1>
   </div>
-  <div class="nav-eyebrow">
+  <div class="nav-eyebrow" id="navEyebrow" style="display:none;">
     <span class="point-vivant"></span>
-    Fabrique de l'Adoption Numérique
+    <span id="navEyebrowText"></span>
   </div>
   <div class="nav-right">
     <div class="nav-status">
@@ -243,8 +243,8 @@
   </div>
 
   <!-- Footer branding -->
-  <footer class="fan-footer">
-    <div class="fan-footer-title">Fabrique de l'Adoption Numérique — e.SNCF Solutions</div>
+  <footer class="fan-footer" id="appFooter" style="display:none;">
+    <div class="fan-footer-title" id="footerBrandText"></div>
     <div class="fan-footer-filet"></div>
   </footer>
 
@@ -301,6 +301,25 @@
           <label class="flabel">Contexte métier additionnel (optionnel)</label>
           <textarea class="ftextarea" id="cfgContext" placeholder="Ex : contexte SNCF, direction TER, contraintes réseau interne..."></textarea>
           <div class="fhint">Ajouté au prompt système pour contextualiser les livrables.</div>
+        </div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-section-title">Identité de marque <span id="designBadge" class="badge" style="margin-left:4px;display:none;">Actif</span></div>
+        <div class="fhint" style="margin-bottom:12px;">Fournissez un fichier <code>design.md</code> (ou collez le contenu) décrivant l'identité visuelle cible : couleurs, typographie, ton éditorial, composants... Claude s'en inspirera pour la maquette et la synthèse.</div>
+        <div class="gap8" style="margin-bottom:8px;">
+          <button class="btn sm" onclick="document.getElementById('designFilePicker').click()">📄 Importer un design.md</button>
+          <button class="btn sm danger" id="clearDesignBtn" style="display:none;" onclick="clearDesignMd()">✕ Effacer</button>
+          <input id="designFilePicker" type="file" style="display:none" accept=".md,.txt" onchange="handleDesignFileSelect(this)" />
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Contenu design.md <span style="font-weight:400;opacity:0.6;">(éditable)</span></label>
+          <textarea class="ftextarea" id="designMdArea" placeholder="# Design System&#10;&#10;## Couleurs&#10;- Primaire : #0055A5&#10;- Accent : #FF6B35&#10;&#10;## Typographie&#10;- Police : Inter, sans-serif&#10;&#10;## Ton&#10;- Professionnel, direct, sans jargon..." style="min-height:140px;font-family:monospace;font-size:12px;" oninput="onDesignMdChange()"></textarea>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Nom de la marque / organisation <span style="font-weight:400;opacity:0.6;">(optionnel)</span></label>
+          <input class="finput" id="cfgBrandName" type="text" placeholder="Ex : Acme Corp, Mon Projet..." oninput="onBrandNameChange()" />
+          <div class="fhint">Affiché dans la nav et le footer de l'application.</div>
         </div>
       </div>
 

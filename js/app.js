@@ -12,6 +12,7 @@ let lastMockHtml = '';
 let lastCadrageHtml = '';
 let genDone = 0;
 let answeredQuestions = {};         // { "1.1": "réponse courte", ... }
+let designMdContent = '';           // Contenu du design.md importé
 const LIVE_CHUNK_SIZE = 400;        // nb de nouveaux chars avant analyse progressive
 let liveLastAnalyzedLen = 0;
 let liveAnalysisRunning = false;
@@ -315,6 +316,56 @@ function updateCfg() {
     warn.style.display = 'block';
   }
   updateAgentBadge();
+}
+
+/* ═══════════════════════════════════════
+   DESIGN.MD
+   ═══════════════════════════════════════ */
+function handleDesignFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('designMdArea').value = e.target.result;
+    onDesignMdChange();
+    showToast('design.md chargé');
+  };
+  reader.readAsText(file);
+}
+
+function onDesignMdChange() {
+  designMdContent = document.getElementById('designMdArea').value;
+  const hasDesign = designMdContent.trim().length > 0;
+  const badge = document.getElementById('designBadge');
+  const clearBtn = document.getElementById('clearDesignBtn');
+  badge.style.display = hasDesign ? '' : 'none';
+  badge.className = hasDesign ? 'badge ok' : 'badge';
+  clearBtn.style.display = hasDesign ? '' : 'none';
+}
+
+function clearDesignMd() {
+  designMdContent = '';
+  document.getElementById('designMdArea').value = '';
+  document.getElementById('designFilePicker').value = '';
+  onDesignMdChange();
+  showToast('Identité de marque effacée');
+}
+
+function onBrandNameChange() {
+  const name = document.getElementById('cfgBrandName').value.trim();
+  const eyebrow = document.getElementById('navEyebrow');
+  const eyebrowText = document.getElementById('navEyebrowText');
+  const footer = document.getElementById('appFooter');
+  const footerText = document.getElementById('footerBrandText');
+  if (name) {
+    eyebrow.style.display = '';
+    eyebrowText.textContent = name;
+    footer.style.display = '';
+    footerText.textContent = name;
+  } else {
+    eyebrow.style.display = 'none';
+    footer.style.display = 'none';
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -882,7 +933,10 @@ async function generateCadrage() {
   const agentNames = Object.keys(activeAgents);
   const agentList = agentNames.length > 0 ? agentNames.join(', ') : 'aucun agent activé';
 
-  const systemCtx = `Tu es un collectif d'experts en cadrage de projets d'innovation (${agentList}). Tu produis des livrables de cadrage ultra-structurés pour la SNCF / Fabrique de l'Adoption Numérique (FAN / 574).
+  const designCtx = designMdContent.trim();
+  const brandName = document.getElementById('cfgBrandName').value.trim();
+
+  const systemCtx = `Tu es un collectif d'experts en cadrage de projets d'innovation (${agentList}). Tu produis des livrables de cadrage ultra-structurés.
 
 EXPERTS MOBILISÉS :
 ${JSON.stringify(activeAgents, null, 2)}
@@ -892,9 +946,9 @@ QUESTIONNAIRE :
 ${JSON.stringify(questionnaire)}`;
 
   // Launch 3 calls in parallel
-  genDeliverable(apiKey, systemCtx, buildSynthPrompt(systemCtx), 'synth', 'synthFrame', 'Synth');
-  genDeliverable(apiKey, systemCtx, buildMockPrompt(systemCtx), 'mock', 'mockFrame', 'Mock');
-  genDeliverable(apiKey, systemCtx, buildCadragePrompt(systemCtx), 'cadrage', 'cadrageFrame', 'Cadrage');
+  genDeliverable(apiKey, systemCtx, buildSynthPrompt(systemCtx, designCtx, brandName), 'synth', 'synthFrame', 'Synth');
+  genDeliverable(apiKey, systemCtx, buildMockPrompt(systemCtx, designCtx, brandName), 'mock', 'mockFrame', 'Mock');
+  genDeliverable(apiKey, systemCtx, buildCadragePrompt(systemCtx, designCtx, brandName), 'cadrage', 'cadrageFrame', 'Cadrage');
 }
 
 async function genDeliverable(apiKey, systemCtx, prompt, key, frameId, statusKey) {
@@ -936,7 +990,10 @@ function onGenPartDone() {
 /* ═══════════════════════════════════════
    PROMPTS
    ═══════════════════════════════════════ */
-function buildSynthPrompt(ctx) {
+function buildSynthPrompt(ctx, designCtx, brandName) {
+  const designSection = designCtx
+    ? `\n\nIDENTITÉ DE MARQUE (respecter impérativement) :\n${designCtx}`
+    : '\n\n- Design sobre : fond blanc, police sans-serif, couleurs neutres (bleu #0088CE, accent #DC582A)';
   return ctx + `\n\nLIVRABLE 1 - SYNTHESE STRUCTUREE
 Génère un document HTML complet et autonome (avec <style> intégré) qui reformule la demande métier.
 
@@ -951,14 +1008,17 @@ RÈGLES :
   5. ÉTAPES - roadmap 4-6 jalons avec dates indicatives
   6. CE QUE VOUS POUVEZ METTRE - moyens métier + coûts estimés par scénario
 
-- Priorité chiffres : temps, gains, coûts, volumétrie
-- Design sobre : fond blanc, police sans-serif, couleurs SNCF (bleu #0088CE, accent #DC582A)
+- Priorité chiffres : temps, gains, coûts, volumétrie${designSection}
 - HTML complet (doctype, head, body) prêt à l'affichage
 
 Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
 }
 
-function buildMockPrompt(ctx) {
+function buildMockPrompt(ctx, designCtx, brandName) {
+  const appName = brandName || 'Cadrage Express';
+  const designSection = designCtx
+    ? `\nIDENTITÉ DE MARQUE (respecter impérativement pour tous les choix visuels — couleurs, typo, ton, composants) :\n${designCtx}\n`
+    : `\n- Palette : fond #F0F1F4, surfaces blanches, titres bleu #0088CE, accents #DC582A, texte #3C3732\n- Police system sans-serif (Segoe UI, Arial)\n`;
   return ctx + `\n\nLIVRABLE 2 - MAQUETTE / PROTOTYPE VISUEL DE L'APPLICATION
 À partir du besoin métier décrit dans le questionnaire, imagine et génère une MAQUETTE HTML de ce à quoi l'application ou la webapp demandée POURRAIT RESSEMBLER une fois réalisée.
 
@@ -972,19 +1032,17 @@ CE QUE TU DOIS FAIRE :
 RÈGLES TECHNIQUES :
 - Page HTML complète et autonome (doctype, head avec <style> intégré, body)
 - Design sobre, moderne, professionnel - comme une vraie webapp d'entreprise
-- Palette : fond #F0F1F4, surfaces blanches, titres bleu SNCF #0088CE, accents #DC582A, texte #3C3732
-- Police system sans-serif (Segoe UI, Arial)
-- Utiliser flexbox/grid pour une mise en page réaliste (sidebar, header, cards, tables...)
+${designSection}- Utiliser flexbox/grid pour une mise en page réaliste (sidebar, header, cards, tables...)
 - Icônes Unicode pour illustrer la navigation et les sections
 - Barre de navigation en haut ou sidebar avec le nom du projet
-- Footer discret : 'Maquette générée par Cadrage Express v7 — Prototype non fonctionnel'
+- Footer discret : 'Maquette générée par ${appName} — Prototype non fonctionnel'
 
 IMPORTANT : Ce n'est PAS un résumé du cadrage. C'est un APERÇU VISUEL de l'application métier que le demandeur souhaite obtenir.
 
 Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
 }
 
-function buildCadragePrompt(ctx) {
+function buildCadragePrompt(ctx, designCtx, brandName) {
   return ctx + `\n\nLIVRABLE 3 - PREMIERS ÉLÉMENTS DE CADRAGE TECHNIQUE
 Ce document est un PRÉ-CAHIER DES CHARGES que la personne qui cadre le projet va CONSERVER et utiliser comme SUPPORT DE TRAVAIL pour aller ensuite échanger avec les véritables experts humains (UX designer, architecte technique, financier, juridique, etc.).
 
