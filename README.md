@@ -1,4 +1,4 @@
-# Cadrage Express v8
+# Cadrage Express
 
 **Outil de cadrage de projets d'innovation assisté par IA**
 Fabrique de l'Adoption Numérique (FAN) — e.SNCF Solutions
@@ -72,7 +72,7 @@ cadragexpress/
 ├── css/
 │   └── style.css                 # Design system FAN (mode clair)
 ├── js/
-│   └── app.js                    # Logique applicative (~1 200 lignes)
+│   └── app.js                    # Logique applicative
 ├── data/
 │   └── cadrage-questions.json    # 65 questions × 15 blocs
 └── assets/                       # Logos, favicons (à compléter)
@@ -116,21 +116,22 @@ Ouvrir `index.html` directement dans le navigateur.
 
 ### Configuration
 
-1. Cliquer sur l'icône ⚙ en haut à droite
+1. Cliquer sur l'onglet **Config** (étape 0 du stepper) ou sur l'icône ⚙ dans la barre de navigation
 2. Saisir la clé API Anthropic (`sk-ant-...`)
 3. Choisir le modèle Claude (Opus 4.6 pour la meilleure qualité, Haiku 4.5 pour la rapidité)
 4. Ajuster le contexte métier si nécessaire
+5. Cliquer sur **Commencer le recueil →** pour passer à l'étape suivante
 
 > **Sécurité :** la clé API est stockée uniquement en mémoire navigateur (non persistée). Elle est effacée à la fermeture de l'onglet.
 
 ### Workflow type
 
-1. **Configurer** l'API et les agents experts
-2. **Charger** la source (audio, PDF, texte ou saisie manuelle)
-3. **Analyser** — Claude remplit automatiquement le questionnaire
+1. **Config** — Saisir la clé API et paramétrer les agents experts (onglet 0)
+2. **Charger** la source (audio, PDF, texte ou saisie manuelle) dans la colonne gauche
+3. **Analyser** — Claude remplit automatiquement le questionnaire (colonne droite)
 4. **Vérifier et compléter** manuellement les questions manquantes
-5. **Générer** les trois livrables (3 appels API parallèles)
-6. **Télécharger** les fichiers HTML générés
+5. **Générer** les trois livrables via le bouton en bas de la colonne gauche
+6. **Télécharger** les fichiers HTML générés (onglet Livrables)
 
 ---
 
@@ -172,10 +173,16 @@ L'interface respecte la **Charte Graphique FAN** (Fabrique de l'Adoption Numéri
 
 ---
 
+## Mentions d'utilisation
+
+Les contenus produits par Cadrage Express sont générés par intelligence artificielle (Claude, Anthropic) et ont une valeur **indicative**. Ils doivent être relus, validés et complétés par les experts métier et techniques concernés avant toute décision ou engagement. Ne saisissez pas d'informations personnelles sensibles ou classifiées. L'utilisation est soumise aux [conditions d'utilisation Anthropic](https://www.anthropic.com/legal/consumer-usage-policy).
+
+---
+
 ## Contribuer
 
 Le projet est maintenu par l'équipe FAN / 574. Pour toute suggestion ou anomalie, contacter l'équipe via les canaux habituels ou ouvrir une issue sur le dépôt interne.
 
 ---
 
-*Cadrage Express v8 — Fabrique de l'Adoption Numérique — e.SNCF Solutions*
+*Cadrage Express — Fabrique de l'Adoption Numérique — e.SNCF Solutions*

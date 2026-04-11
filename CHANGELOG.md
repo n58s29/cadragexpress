@@ -5,6 +5,42 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.1.0] — 2026-04-11
+
+### Modifié — Refonte UX écran d'accueil + Config inline
+
+**Layout Step 1 — 2 colonnes :**
+- Nouveau layout `grid` côte à côte : colonne gauche Source (sticky), colonne droite Questionnaire
+- Fin du scroll vertical entre la source et le questionnaire ; les deux zones sont visibles simultanément
+
+**Navigation source simplifiée :**
+- Suppression de la navigation à deux niveaux (Audio / Texte → sous-options)
+- Remplacement par 5 tuiles directes en une seule rangée : Fichier audio · Dictée live · PDF/Fichier · Coller texte · Manuel
+- `switchMethod()` simplifié (suppression de `switchSourceGroup`, `METHOD_GROUP`, `METHOD_SUB`)
+
+**Zones de dépôt :**
+- Remplacement des grandes dropzones (48 px de padding) par des zones compactes (`compact-drop`) : icône + texte sur une ligne
+
+**Boutons d'action :**
+- `.btn-analyse` : bouton pleine largeur, 14 px, avec état `disabled` visible
+- `.btn-generate` : CTA "Générer les livrables →" en cerulean avec ombre portée, clairement distinct
+
+**Questionnaire :**
+- Premier bloc ouvert automatiquement au chargement
+- Les blocs remplis par l'IA s'ouvrent automatiquement après analyse (plus besoin de tout déplier manuellement)
+
+**Config — Step 0 :**
+- La configuration quitte le tiroir latéral (overlay) et devient un panneau inline accessible via l'onglet **⚙ Config** dans le stepper
+- Le stepper passe de 2 à 3 onglets : `⚙ Config › 1 Recueil › 2 Livrables`
+- Bouton "Commencer le recueil →" en bas de la config pour enchaîner vers l'étape 1
+- Le bouton ⚙ de la nav redirige vers `goStep(0)` (plus d'overlay)
+
+**Version et mentions légales :**
+- Suppression du numéro de version dans le titre de l'onglet navigateur et la barre de navigation
+- Ajout d'un **footer permanent** en bas de page : version `v8.0`, mentions d'utilisation IA (nature indicative des livrables, clé API en mémoire locale uniquement, données envoyées à Anthropic, lien CGU Anthropic)
+
+---
+
 ## [8.0.0] — 2026-04-05
 
 ### Modifié — Refonte design system FAN

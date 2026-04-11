@@ -184,6 +184,8 @@ async function init() {
       </div>`;
   }
   renderQuestionnaire();
+  // Ouvre le premier bloc par défaut
+  if (questionDefs.blocs && questionDefs.blocs.length > 0) toggleBloc(questionDefs.blocs[0].id);
   renderAgentGrid();
   onModelChange();
   updateCfg();
@@ -265,8 +267,8 @@ function onModelChange() {
 /* ═══════════════════════════════════════
    CONFIG
    ═══════════════════════════════════════ */
-function openConfig() { document.getElementById('configOverlay').classList.add('open'); }
-function closeConfig() { document.getElementById('configOverlay').classList.remove('open'); updateCfg(); }
+function openConfig() { goStep(0); }
+function closeConfig() { goStep(curStep > 0 ? curStep : 1); updateCfg(); }
 
 function clearAllData() {
   if (!confirm('Supprimer toutes les données du projet ?\n\nCela effacera le questionnaire, les fichiers chargés et les livrables générés.\nLa configuration (clé API, modèle, agents) sera conservée.')) return;
@@ -293,7 +295,6 @@ function clearAllData() {
   document.getElementById('genStatusCard').style.display = 'none';
   // Retour étape 1
   goStep(1);
-  closeConfig();
   showToast('Données effacées');
 }
 function toggleKey() {
@@ -355,16 +356,14 @@ function onBrandNameChange() {
   const name = document.getElementById('cfgBrandName').value.trim();
   const eyebrow = document.getElementById('navEyebrow');
   const eyebrowText = document.getElementById('navEyebrowText');
-  const footer = document.getElementById('appFooter');
   const footerText = document.getElementById('footerBrandText');
   if (name) {
     eyebrow.style.display = '';
     eyebrowText.textContent = name;
-    footer.style.display = '';
-    footerText.textContent = name;
+    if (footerText) footerText.textContent = name;
   } else {
     eyebrow.style.display = 'none';
-    footer.style.display = 'none';
+    if (footerText) footerText.textContent = '';
   }
 }
 
@@ -373,41 +372,32 @@ function onBrandNameChange() {
    ═══════════════════════════════════════ */
 function goStep(n) {
   curStep = n;
-  ['stab1','stab2'].forEach((id, i) => {
+  ['stab0','stab1','stab2'].forEach((id, i) => {
     const el = document.getElementById(id);
-    el.className = 'step-tab' + (i+1 === n ? ' active' : (i+1 < n ? ' done' : ''));
+    if (!el) return;
+    el.className = 'step-tab' + (i === n ? ' active' : (i < n ? ' done' : ''));
   });
-  [1,2].forEach(j => {
-    document.getElementById('panel'+j).className = j === n ? 'panel visible' : 'panel';
+  [0,1,2].forEach(j => {
+    const p = document.getElementById('panel'+j);
+    if (p) p.className = j === n ? 'panel visible' : 'panel';
   });
+  if (n === 0) updateCfg();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /* ═══════════════════════════════════════
    SOURCE SWITCH
    ═══════════════════════════════════════ */
-const METHOD_GROUP = { audio:'audio', live:'audio', pdf:'text', paste:'text', manual:'text' };
-const METHOD_SUB   = { audio:'ssFile', live:'ssLive', pdf:'ssPdf', paste:'ssPaste', manual:'ssManual' };
-const METHOD_ZONE  = { audio:'zoneAudio', live:'zoneLive', pdf:'zonePdf', paste:'zonePaste', manual:'zoneManual' };
-
-function switchSourceGroup(group) {
-  document.getElementById('sgAudio').className = group === 'audio' ? 'source-group-btn active' : 'source-group-btn';
-  document.getElementById('sgText').className  = group === 'text'  ? 'source-group-btn active' : 'source-group-btn';
-  document.getElementById('audioSubBar').style.display = group === 'audio' ? '' : 'none';
-  document.getElementById('textSubBar').style.display  = group === 'text'  ? '' : 'none';
-  switchMethod(group === 'audio' ? 'audio' : 'pdf');
-}
+const METHOD_TILE = { audio:'mtAudio', live:'mtLive', pdf:'mtPdf', paste:'mtPaste', manual:'mtManual' };
+const METHOD_ZONE = { audio:'zoneAudio', live:'zoneLive', pdf:'zonePdf', paste:'zonePaste', manual:'zoneManual' };
 
 function switchMethod(m) {
-  const group = METHOD_GROUP[m];
-  document.getElementById('sgAudio').className = group === 'audio' ? 'source-group-btn active' : 'source-group-btn';
-  document.getElementById('sgText').className  = group === 'text'  ? 'source-group-btn active' : 'source-group-btn';
-  document.getElementById('audioSubBar').style.display = group === 'audio' ? '' : 'none';
-  document.getElementById('textSubBar').style.display  = group === 'text'  ? '' : 'none';
-  Object.entries(METHOD_SUB).forEach(([k, id]) => {
+  // Tuiles : activer/désactiver
+  Object.entries(METHOD_TILE).forEach(([k, id]) => {
     const el = document.getElementById(id);
-    if (el) el.className = k === m ? 'source-sub-btn active' : 'source-sub-btn';
+    if (el) el.className = k === m ? 'method-tile active' : 'method-tile';
   });
+  // Zones : afficher / masquer
   Object.entries(METHOD_ZONE).forEach(([k, id]) => {
     const el = document.getElementById(id);
     if (el) el.style.display = k === m ? 'block' : 'none';
@@ -845,6 +835,15 @@ function applyAnswers(newAnswers) {
       }
     });
     _setBlocBadge(bloc, count);
+    // Ouvre les blocs qui ont été remplis par l'IA
+    if (count > 0) {
+      const body = document.getElementById('bbody_' + bloc.id);
+      const hd   = body?.previousElementSibling;
+      if (body && !body.classList.contains('open')) {
+        body.classList.add('open');
+        if (hd) hd.classList.add('open');
+      }
+    }
   });
   updateQProgress();
 }

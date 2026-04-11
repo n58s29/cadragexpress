@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cadrage Express v8</title>
+  <title>Cadrage Express</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
 <nav>
   <div class="nav-brand">
     <div class="logo-icon">CE</div>
-    <h1>Cadrage Express <span class="version">v8</span></h1>
+    <h1>Cadrage Express</h1>
   </div>
   <div class="nav-eyebrow" id="navEyebrow" style="display:none;">
     <span class="point-vivant"></span>
@@ -29,6 +29,10 @@
 
 <!-- ═══════ STEPPER ═══════ -->
 <div class="stepper">
+  <button class="step-tab" id="stab0" onclick="goStep(0)">
+    <span class="step-num" id="snum0">⚙</span> Config
+  </button>
+  <span class="step-connector">›</span>
   <button class="step-tab active" id="stab1" onclick="goStep(1)">
     <span class="step-num" id="snum1">1</span> Recueil
   </button>
@@ -41,224 +45,9 @@
 <!-- ═══════ MAIN ═══════ -->
 <div class="main">
 
-  <!-- ══ STEP 1 ══ -->
-  <div class="panel visible" id="panel1">
-
-    <div id="cfgWarning" class="warn-box" style="display:none;">
-      ⚠ <strong>Configuration requise</strong> — Ouvrez le panneau ⚙ Configuration pour saisir votre clé API Anthropic.
-    </div>
-
-    <!-- Source -->
-    <div class="card">
-      <div class="card-hd">
-        <h3>Source du besoin</h3>
-      </div>
-      <div class="card-bd">
-        <!-- Sélecteur niveau 1 : Audio / Texte -->
-        <div class="source-group-toggle">
-          <button class="source-group-btn active" id="sgAudio" onclick="switchSourceGroup('audio')">🎙 Audio</button>
-          <button class="source-group-btn" id="sgText" onclick="switchSourceGroup('text')">📄 Texte</button>
-        </div>
-        <!-- Sous-options Audio -->
-        <div id="audioSubBar" class="source-sub-toggle">
-          <button class="source-sub-btn active" id="ssFile" onclick="switchMethod('audio')">📁 Importer un fichier</button>
-          <button class="source-sub-btn" id="ssLive" onclick="switchMethod('live')">🎤 Dictée en direct</button>
-        </div>
-        <!-- Sous-options Texte -->
-        <div id="textSubBar" class="source-sub-toggle" style="display:none;">
-          <button class="source-sub-btn" id="ssPdf" onclick="switchMethod('pdf')">📄 PDF / Fichier texte</button>
-          <button class="source-sub-btn" id="ssPaste" onclick="switchMethod('paste')">📋 Coller du texte</button>
-          <button class="source-sub-btn" id="ssManual" onclick="switchMethod('manual')">✏ Saisie manuelle</button>
-        </div>
-
-        <!-- PDF/Text Zone -->
-        <div id="zonePdf" style="display:none;">
-          <div id="pdfDropZone" class="dropzone" onclick="document.getElementById('filePicker').click()">
-            <span class="dz-icon">📄</span>
-            <h4>Déposez un fichier ici</h4>
-            <p>ou cliquez pour sélectionner</p>
-            <p class="sub">PDF de transcription, .txt, .md — Le texte sera extrait et analysé par Claude</p>
-          </div>
-          <input id="filePicker" type="file" style="display:none" accept=".pdf,.txt,.md,.text" onchange="handleFileSelect(this)" />
-
-          <div id="fileLoaded" class="file-loaded" style="display:none;">
-            <span class="fl-icon">📄</span>
-            <div class="fl-info">
-              <div class="fl-name" id="loadedFileName">fichier.pdf</div>
-              <div class="fl-meta" id="loadedFileMeta">Prêt pour analyse</div>
-            </div>
-            <div class="fl-actions">
-              <button class="btn sm" onclick="document.getElementById('filePicker').click()">🔄 Changer</button>
-              <button class="btn sm danger" onclick="clearFile()">✕ Retirer</button>
-            </div>
-          </div>
-
-          <div class="progress-wrap" id="fProg">
-            <div class="progress-fill" id="fProgFill"></div>
-          </div>
-          <div class="status-msg" id="fStatus"></div>
-
-          <div class="gap8 mt12">
-            <button class="btn primary" id="analyzeBtn" disabled onclick="runAnalysis()">▶ Analyser et remplir le questionnaire</button>
-          </div>
-        </div>
-
-        <!-- Paste Zone -->
-        <div id="zonePaste" style="display:none;">
-          <div class="fgroup">
-            <label class="flabel">Collez la transcription ou le compte-rendu</label>
-            <textarea class="ftextarea" id="pasteArea" placeholder="Collez ici le texte brut de la transcription, du CR de réunion, de l'expression de besoin..." style="min-height: 160px;"></textarea>
-          </div>
-          <div class="gap8 mt12">
-            <button class="btn primary" onclick="runAnalysisFromPaste()">▶ Analyser et remplir le questionnaire</button>
-          </div>
-        </div>
-
-        <!-- Audio Zone -->
-        <div id="zoneAudio">
-          <div id="audioDropZone" class="dropzone" onclick="document.getElementById('audioPicker').click()">
-            <span class="dz-icon">🎙</span>
-            <h4>Déposez un fichier audio ici</h4>
-            <p>ou cliquez pour sélectionner</p>
-            <p class="sub">MP3, WAV, M4A, OGG, WEBM — L'audio sera transcrit et analysé par Claude</p>
-          </div>
-          <input id="audioPicker" type="file" style="display:none" accept=".mp3,.wav,.m4a,.ogg,.webm,.mp4,.aac,.flac" onchange="handleAudioSelect(this)" />
-
-          <div id="audioLoaded" class="file-loaded" style="display:none;">
-            <span class="fl-icon">🎙</span>
-            <div class="fl-info">
-              <div class="fl-name" id="loadedAudioName">audio.mp3</div>
-              <div class="fl-meta" id="loadedAudioMeta">Prêt pour transcription</div>
-            </div>
-            <div class="fl-actions">
-              <button class="btn sm" onclick="document.getElementById('audioPicker').click()">🔄 Changer</button>
-              <button class="btn sm danger" onclick="clearAudio()">✕ Retirer</button>
-            </div>
-          </div>
-
-          <div class="progress-wrap" id="aProg">
-            <div class="progress-fill" id="aProgFill"></div>
-          </div>
-          <div class="status-msg" id="aStatus"></div>
-
-          <div class="gap8 mt12">
-            <button class="btn primary" id="transcribeBtn" disabled onclick="runAnalysisFromAudio()">▶ Transcrire et remplir le questionnaire</button>
-          </div>
-        </div>
-
-        <!-- Live Dictation Zone -->
-        <div id="zoneLive" style="display:none;">
-          <div class="live-controls">
-            <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="Démarrer / Arrêter la dictée">🎤</button>
-            <div>
-              <div id="micStatus" class="mic-status">Cliquez pour commencer la dictée</div>
-              <div id="liveInterim" class="live-interim"></div>
-            </div>
-          </div>
-          <div class="fgroup">
-            <label class="flabel">Transcription (éditable avant analyse)</label>
-            <textarea class="ftextarea" id="liveTranscript" placeholder="La transcription apparaîtra ici au fil de votre parole..." style="min-height: 140px;"></textarea>
-          </div>
-          <div class="gap8 mt12">
-            <button class="btn sm danger" onclick="clearLive()">✕ Effacer</button>
-            <button class="btn primary" onclick="runAnalysisFromLive()">▶ Analyser et remplir le questionnaire</button>
-          </div>
-          <div class="fhint" style="margin-top:8px;">Fonctionne sur Chrome et Edge. Langue détectée : français.</div>
-        </div>
-
-        <!-- Manual Zone -->
-        <div id="zoneManual" style="display:none;">
-          <div class="note-box">Remplissez directement le questionnaire ci-dessous.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Questionnaire -->
-    <div class="card">
-      <div class="card-hd">
-        <h3>Questionnaire de cadrage</h3>
-        <span class="badge" id="qBadge">0 / 65</span>
-      </div>
-      <div class="q-progress-wrap">
-        <div class="q-progress-bar"><div class="q-progress-fill" id="qProgressFill"></div></div>
-        <div class="q-progress-label" id="qProgressLabel">0 / 65 (0%)</div>
-      </div>
-      <div class="card-bd" id="qBody"></div>
-    </div>
-
-    <div class="nav-row">
-      <div></div>
-      <button class="btn accent" id="genBtn" onclick="generateCadrage()">
-        Générer les livrables →
-      </button>
-    </div>
-  </div>
-
-  <!-- ══ STEP 2 ══ -->
-  <div class="panel" id="panel2">
-
-    <div class="card" id="genStatusCard" style="display:none;">
-      <div class="card-hd">
-        <h3>Génération en cours</h3>
-        <span class="badge" id="genStatusBadge">0 / 3</span>
-      </div>
-      <div class="card-bd">
-        <div class="gen-item"><span class="gi-label">Synthèse structurée</span><span class="gi-status" id="genStatusSynth">En attente</span></div>
-        <div class="gen-item"><span class="gi-label">Maquette applicative</span><span class="gi-status" id="genStatusMock">En attente</span></div>
-        <div class="gen-item"><span class="gi-label">Pré-cadrage technique</span><span class="gi-status" id="genStatusCadrage">En attente</span></div>
-      </div>
-    </div>
-
-    <div class="card" id="delCard">
-      <div class="del-tabs">
-        <button class="del-tab active" id="dtSynth" onclick="switchDel('synth')">📊 Synthèse</button>
-        <button class="del-tab" id="dtMock" onclick="switchDel('mock')">🖼 Maquette</button>
-        <button class="del-tab" id="dtCadrage" onclick="switchDel('cadrage')">📝 Pré-cadrage</button>
-      </div>
-
-      <div class="del-pane visible" id="dpSynth">
-        <div class="output-bar">
-          <button class="btn sm" onclick="downloadHtml(lastSynthHtml, 'cadrage_synthese.html')">💾 Télécharger</button>
-        </div>
-        <iframe id="synthFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
-      </div>
-      <div class="del-pane" id="dpMock">
-        <div class="output-bar">
-          <button class="btn sm" onclick="downloadHtml(lastMockHtml, 'cadrage_maquette.html')">💾 Télécharger</button>
-        </div>
-        <iframe id="mockFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
-      </div>
-      <div class="del-pane" id="dpCadrage">
-        <div class="output-bar">
-          <button class="btn sm" onclick="downloadHtml(lastCadrageHtml, 'cadrage_pre_cdc.html')">💾 Télécharger</button>
-        </div>
-        <iframe id="cadrageFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
-      </div>
-    </div>
-
-    <div class="nav-row">
-      <button class="btn" onclick="goStep(1)">← Modifier le questionnaire</button>
-      <button class="btn accent" onclick="generateCadrage()">🔄 Régénérer</button>
-    </div>
-  </div>
-
-  <!-- Footer branding -->
-  <footer class="fan-footer" id="appFooter" style="display:none;">
-    <div class="fan-footer-title" id="footerBrandText"></div>
-    <div class="fan-footer-filet"></div>
-  </footer>
-
-</div>
-
-<!-- ═══════ CONFIG OVERLAY ═══════ -->
-<div class="config-overlay" id="configOverlay">
-  <div class="config-backdrop" onclick="closeConfig()"></div>
-  <div class="config-panel">
-    <div class="config-panel-hd">
-      <h2>Configuration</h2>
-      <button class="btn-close-cfg" onclick="closeConfig()">✕</button>
-    </div>
-    <div class="config-panel-bd">
+  <!-- ══ STEP 0 : CONFIG ══ -->
+  <div class="panel" id="panel0">
+    <div class="config-inline">
 
       <div class="cfg-section">
         <div class="cfg-section-title">Connexion API Anthropic</div>
@@ -329,9 +118,244 @@
         <button class="btn danger" onclick="clearAllData()">🗑 Supprimer toutes les données</button>
       </div>
 
+      <div class="cfg-inline-footer">
+        <button class="btn-generate" onclick="goStep(1)">Commencer le recueil →</button>
+      </div>
+
     </div>
   </div>
+
+  <!-- ══ STEP 1 ══ -->
+  <div class="panel visible" id="panel1">
+
+    <div id="cfgWarning" class="warn-box" style="display:none;">
+      ⚠ <strong>Configuration requise</strong> — Ouvrez le panneau ⚙ Configuration pour saisir votre clé API Anthropic.
+    </div>
+
+    <div class="step1-grid">
+
+      <!-- ── Colonne gauche : Source ── -->
+      <div class="step1-left">
+        <div class="card source-card">
+          <div class="card-hd">
+            <h3>Source du besoin</h3>
+          </div>
+          <div class="card-bd">
+
+            <!-- 5 tuiles méthodes en une seule rangée -->
+            <div class="method-tiles">
+              <button class="method-tile active" id="mtAudio" onclick="switchMethod('audio')" title="Importer un fichier audio">
+                <span class="mt-icon">🎙</span>
+                <span class="mt-label">Fichier audio</span>
+              </button>
+              <button class="method-tile" id="mtLive" onclick="switchMethod('live')" title="Dictée en direct (Chrome/Edge)">
+                <span class="mt-icon">🎤</span>
+                <span class="mt-label">Dictée live</span>
+              </button>
+              <button class="method-tile" id="mtPdf" onclick="switchMethod('pdf')" title="Importer un PDF ou fichier texte">
+                <span class="mt-icon">📄</span>
+                <span class="mt-label">PDF / Fichier</span>
+              </button>
+              <button class="method-tile" id="mtPaste" onclick="switchMethod('paste')" title="Coller du texte">
+                <span class="mt-icon">📋</span>
+                <span class="mt-label">Coller texte</span>
+              </button>
+              <button class="method-tile" id="mtManual" onclick="switchMethod('manual')" title="Saisie manuelle directe">
+                <span class="mt-icon">✏</span>
+                <span class="mt-label">Manuel</span>
+              </button>
+            </div>
+
+            <!-- Audio Zone -->
+            <div id="zoneAudio" class="method-zone">
+              <div id="audioDropZone" class="compact-drop" onclick="document.getElementById('audioPicker').click()">
+                <span class="cd-icon">🎙</span>
+                <div class="cd-text">
+                  <div class="cd-title">Déposez votre fichier audio ici</div>
+                  <div class="cd-sub">ou <u>parcourir</u> — MP3, WAV, M4A, OGG, WEBM</div>
+                </div>
+              </div>
+              <input id="audioPicker" type="file" style="display:none" accept=".mp3,.wav,.m4a,.ogg,.webm,.mp4,.aac,.flac" onchange="handleAudioSelect(this)" />
+
+              <div id="audioLoaded" class="file-loaded" style="display:none;">
+                <span class="fl-icon">🎙</span>
+                <div class="fl-info">
+                  <div class="fl-name" id="loadedAudioName">audio.mp3</div>
+                  <div class="fl-meta" id="loadedAudioMeta">Prêt pour transcription</div>
+                </div>
+                <div class="fl-actions">
+                  <button class="btn sm" onclick="document.getElementById('audioPicker').click()">🔄</button>
+                  <button class="btn sm danger" onclick="clearAudio()">✕</button>
+                </div>
+              </div>
+
+              <div class="progress-wrap" id="aProg"><div class="progress-fill" id="aProgFill"></div></div>
+              <div class="status-msg" id="aStatus"></div>
+
+              <button class="btn-analyse" id="transcribeBtn" disabled onclick="runAnalysisFromAudio()">
+                Transcrire et analyser →
+              </button>
+            </div>
+
+            <!-- PDF/Text Zone -->
+            <div id="zonePdf" class="method-zone" style="display:none;">
+              <div id="pdfDropZone" class="compact-drop" onclick="document.getElementById('filePicker').click()">
+                <span class="cd-icon">📄</span>
+                <div class="cd-text">
+                  <div class="cd-title">Déposez votre fichier ici</div>
+                  <div class="cd-sub">ou <u>parcourir</u> — PDF, .txt, .md</div>
+                </div>
+              </div>
+              <input id="filePicker" type="file" style="display:none" accept=".pdf,.txt,.md,.text" onchange="handleFileSelect(this)" />
+
+              <div id="fileLoaded" class="file-loaded" style="display:none;">
+                <span class="fl-icon">📄</span>
+                <div class="fl-info">
+                  <div class="fl-name" id="loadedFileName">fichier.pdf</div>
+                  <div class="fl-meta" id="loadedFileMeta">Prêt pour analyse</div>
+                </div>
+                <div class="fl-actions">
+                  <button class="btn sm" onclick="document.getElementById('filePicker').click()">🔄</button>
+                  <button class="btn sm danger" onclick="clearFile()">✕</button>
+                </div>
+              </div>
+
+              <div class="progress-wrap" id="fProg"><div class="progress-fill" id="fProgFill"></div></div>
+              <div class="status-msg" id="fStatus"></div>
+
+              <button class="btn-analyse" id="analyzeBtn" disabled onclick="runAnalysis()">
+                Analyser et remplir →
+              </button>
+            </div>
+
+            <!-- Paste Zone -->
+            <div id="zonePaste" class="method-zone" style="display:none;">
+              <textarea class="ftextarea" id="pasteArea" placeholder="Collez ici la transcription, le CR de réunion ou l'expression de besoin..." style="min-height:130px;"></textarea>
+              <button class="btn-analyse" onclick="runAnalysisFromPaste()">
+                Analyser et remplir →
+              </button>
+            </div>
+
+            <!-- Live Dictation Zone -->
+            <div id="zoneLive" class="method-zone" style="display:none;">
+              <div class="live-controls">
+                <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="Démarrer / Arrêter la dictée">🎤</button>
+                <div>
+                  <div id="micStatus" class="mic-status">Cliquez pour commencer</div>
+                  <div id="liveInterim" class="live-interim"></div>
+                </div>
+              </div>
+              <textarea class="ftextarea" id="liveTranscript" placeholder="La transcription apparaîtra ici..." style="min-height:100px;"></textarea>
+              <div class="live-actions">
+                <button class="btn sm danger" onclick="clearLive()">✕ Effacer</button>
+                <button class="btn-analyse" onclick="runAnalysisFromLive()">Analyser →</button>
+              </div>
+              <div class="fhint" style="margin-top:6px;">Chrome et Edge uniquement · français</div>
+            </div>
+
+            <!-- Manual Zone -->
+            <div id="zoneManual" class="method-zone" style="display:none;">
+              <div class="note-box">Remplissez directement le questionnaire ci-contre.</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- CTA Générer -->
+        <button class="btn-generate" id="genBtn" onclick="generateCadrage()">
+          Générer les livrables →
+        </button>
+      </div>
+
+      <!-- ── Colonne droite : Questionnaire ── -->
+      <div class="step1-right">
+        <div class="card questionnaire-card">
+          <div class="card-hd">
+            <h3>Questionnaire de cadrage</h3>
+            <span class="badge" id="qBadge">0 / 65</span>
+          </div>
+          <div class="q-progress-wrap">
+            <div class="q-progress-bar"><div class="q-progress-fill" id="qProgressFill"></div></div>
+            <div class="q-progress-label" id="qProgressLabel">0 / 65 (0%)</div>
+          </div>
+          <div class="card-bd" id="qBody"></div>
+        </div>
+      </div>
+
+    </div><!-- /.step1-grid -->
+  </div>
+
+  <!-- ══ STEP 2 ══ -->
+  <div class="panel" id="panel2">
+
+    <div class="card" id="genStatusCard" style="display:none;">
+      <div class="card-hd">
+        <h3>Génération en cours</h3>
+        <span class="badge" id="genStatusBadge">0 / 3</span>
+      </div>
+      <div class="card-bd">
+        <div class="gen-item"><span class="gi-label">Synthèse structurée</span><span class="gi-status" id="genStatusSynth">En attente</span></div>
+        <div class="gen-item"><span class="gi-label">Maquette applicative</span><span class="gi-status" id="genStatusMock">En attente</span></div>
+        <div class="gen-item"><span class="gi-label">Pré-cadrage technique</span><span class="gi-status" id="genStatusCadrage">En attente</span></div>
+      </div>
+    </div>
+
+    <div class="card" id="delCard">
+      <div class="del-tabs">
+        <button class="del-tab active" id="dtSynth" onclick="switchDel('synth')">📊 Synthèse</button>
+        <button class="del-tab" id="dtMock" onclick="switchDel('mock')">🖼 Maquette</button>
+        <button class="del-tab" id="dtCadrage" onclick="switchDel('cadrage')">📝 Pré-cadrage</button>
+      </div>
+
+      <div class="del-pane visible" id="dpSynth">
+        <div class="output-bar">
+          <button class="btn sm" onclick="downloadHtml(lastSynthHtml, 'cadrage_synthese.html')">💾 Télécharger</button>
+        </div>
+        <iframe id="synthFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+      </div>
+      <div class="del-pane" id="dpMock">
+        <div class="output-bar">
+          <button class="btn sm" onclick="downloadHtml(lastMockHtml, 'cadrage_maquette.html')">💾 Télécharger</button>
+        </div>
+        <iframe id="mockFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+      </div>
+      <div class="del-pane" id="dpCadrage">
+        <div class="output-bar">
+          <button class="btn sm" onclick="downloadHtml(lastCadrageHtml, 'cadrage_pre_cdc.html')">💾 Télécharger</button>
+        </div>
+        <iframe id="cadrageFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn" onclick="goStep(1)">← Modifier le questionnaire</button>
+      <button class="btn accent" onclick="generateCadrage()">🔄 Régénérer</button>
+    </div>
+  </div>
+
+  <!-- Footer permanent -->
+  <footer class="app-footer">
+    <div class="app-footer-brand" id="footerBrandText"></div>
+    <div class="app-footer-filet"></div>
+    <div class="app-footer-body">
+      <div class="app-footer-version">Cadrage Express · v8.0</div>
+      <div class="app-footer-cgu">
+        <strong>Mentions d'utilisation</strong> —
+        Cet outil utilise l'API Claude (Anthropic) pour générer des livrables de cadrage à partir de vos saisies.
+        Les contenus produits sont générés par intelligence artificielle et ont une valeur indicative :
+        ils doivent être relus, validés et complétés par les experts métier et techniques concernés avant toute décision ou engagement.
+        Votre clé API est stockée uniquement en mémoire locale de votre navigateur et n'est jamais transmise à un tiers autre qu'Anthropic.
+        Les données saisies (transcriptions, textes, questionnaire) sont envoyées à l'API Anthropic dans le cadre du traitement ;
+        ne saisissez pas d'informations personnelles sensibles ou classifiées.
+        L'utilisation de cet outil est soumise aux
+        <a href="https://www.anthropic.com/legal/consumer-usage-policy" target="_blank" rel="noopener">conditions d'utilisation d'Anthropic</a>.
+      </div>
+    </div>
+  </footer>
+
 </div>
+
+<!-- overlay supprimé — config désormais dans panel0 -->
 
 <div class="toast" id="toast">✓ OK</div>
 
