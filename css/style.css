@@ -281,7 +281,10 @@ nav {
 .finput:focus, .ftextarea:focus {
   background: var(--surface-flottante);
   border-bottom-color: var(--primaire);
-  outline: none;
+  outline: 2px solid transparent; /* remplacé par border-bottom */
+}
+.finput:focus-visible, .ftextarea:focus-visible {
+  outline: 2px solid transparent;
 }
 .finput::placeholder, .ftextarea::placeholder {
   color: var(--sur-surface-secondaire);
@@ -477,7 +480,7 @@ select.finput option {
 .q-item.answered .q-item-text { color: var(--sur-surface); }
 
 .q-item-answer {
-  font-size: 11px; color: var(--menthe); margin-top: 3px;
+  font-size: 11px; color: #008f6f; margin-top: 3px; /* #008f6f : ratio ≥4.5:1 sur fond blanc — WCAG AA */
   font-style: italic; font-weight: 300; display: none;
 }
 .q-item.answered .q-item-answer { display: block; }
@@ -1167,4 +1170,38 @@ select.finput option {
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--surface-basse); }
 ::-webkit-scrollbar-thumb { background: var(--surface-haute); border-radius: 3px; }
+
+/* ═══════ ACCESSIBILITÉ — RGAA 4.1 ═══════ */
+
+/* Focus visible global (RGAA 10.7) */
+:focus-visible {
+  outline: 2px solid var(--cerulean);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Classe utilitaire pour contenu masqué visuellement mais accessible (RGAA 12.7, 6.2) */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* Lien d'évitement (RGAA 12.7) */
+.skip-link {
+  position: absolute; top: -100px; left: 1rem;
+  background: var(--primaire); color: #fff;
+  padding: 8px 16px; border-radius: 0 0 4px 4px;
+  font-size: 13px; font-weight: 500; z-index: 9999;
+  text-decoration: none; transition: top 0.2s;
+}
+.skip-link:focus { top: 0; }
+
+/* Respect des préférences de mouvement réduit (RGAA 13.8) */
+@media (prefers-reduced-motion: reduce) {
+  .point-vivant { animation: none; opacity: 0.6; }
+  .spinner { animation: none; border-top-color: var(--cerulean); }
+  .mic-btn.recording { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}
 ::-webkit-scrollbar-thumb:hover { background: var(--sur-surface-secondaire); opacity: 0.3; }

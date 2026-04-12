@@ -218,11 +218,14 @@ function renderAgentGrid() {
           <div class="agent-name">${a.label}</div>
           <div class="agent-role">${a.enabled ? '✓ Actif' : 'Désactivé'}</div>
         </div>
-        <button class="agent-edit-btn" onclick="toggleAgentEditor('${a.key}')">✎</button>
-        <button class="agent-toggle ${a.enabled ? 'on' : ''}" id="at_${a.key}" onclick="toggleAgent('${a.key}')"></button>
+        <button class="agent-edit-btn" onclick="toggleAgentEditor('${a.key}')" aria-label="Modifier le prompt de l'agent ${a.label}"><span aria-hidden="true">✎</span></button>
+        <button class="agent-toggle ${a.enabled ? 'on' : ''}" id="at_${a.key}"
+          role="switch" aria-checked="${a.enabled ? 'true' : 'false'}"
+          aria-label="${a.enabled ? 'Désactiver' : 'Activer'} l'agent ${a.label}"
+          onclick="toggleAgent('${a.key}')"></button>
       </div>
       <div class="agent-editor" id="ae_${a.key}">
-        <textarea id="ap_${a.key}" oninput="updateAgentPrompt('${a.key}', this.value)">${esc(a.prompt)}</textarea>
+        <textarea id="ap_${a.key}" aria-label="Prompt de l'agent ${a.label}" oninput="updateAgentPrompt('${a.key}', this.value)">${esc(a.prompt)}</textarea>
       </div>
     </div>
   `).join('');
@@ -474,8 +477,11 @@ function startMic() {
 
   liveRecording = true;
   recognition.start();
-  document.getElementById('micBtn').classList.add('recording');
-  document.getElementById('micBtn').textContent = '⏹';
+  const micBtnStart = document.getElementById('micBtn');
+  micBtnStart.classList.add('recording');
+  micBtnStart.innerHTML = '<span aria-hidden="true">⏹</span>';
+  micBtnStart.setAttribute('aria-pressed', 'true');
+  micBtnStart.setAttribute('aria-label', 'Arrêter la dictée');
   document.getElementById('micStatus').textContent = '🔴 Enregistrement en cours — parlez...';
 }
 
@@ -486,7 +492,9 @@ function stopMic() {
   const status = document.getElementById('micStatus');
   if (!btn) return;
   btn.classList.remove('recording');
-  btn.textContent = '🎤';
+  btn.innerHTML = '<span aria-hidden="true">🎤</span>';
+  btn.setAttribute('aria-pressed', 'false');
+  btn.setAttribute('aria-label', 'Démarrer la dictée');
   status.textContent = liveTranscriptFinal
     ? '✓ Enregistrement terminé — vérifiez la transcription ci-dessous.'
     : 'Cliquez pour commencer la dictée';

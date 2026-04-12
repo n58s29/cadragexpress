@@ -8,6 +8,8 @@
 </head>
 <body>
 
+<a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
 <!-- ═══════ NAV ═══════ -->
 <nav>
   <div class="nav-brand">
@@ -43,7 +45,7 @@
 </div>
 
 <!-- ═══════ MAIN ═══════ -->
-<div class="main">
+<main id="main-content" class="main">
 
   <!-- ══ STEP 0 : CONFIG ══ -->
   <div class="panel" id="panel0">
@@ -52,7 +54,7 @@
       <div class="cfg-section">
         <div class="cfg-section-title">Connexion API Anthropic</div>
         <div class="fgroup">
-          <label class="flabel">Clé API</label>
+          <label class="flabel" for="cfgKey">Clé API</label>
           <div class="gap8">
             <input class="finput" id="cfgKey" type="password" placeholder="sk-ant-..." style="flex:1;" oninput="updateCfg()" />
             <button class="btn sm" onclick="toggleKey()">👁</button>
@@ -64,7 +66,7 @@
         </div>
         <div class="grid-2">
           <div class="fgroup">
-            <label class="flabel">Modèle</label>
+            <label class="flabel" for="cfgModel">Modèle</label>
             <select class="finput" id="cfgModel" onchange="onModelChange()">
               <option value="claude-opus-4-6">Claude Opus 4.6</option>
               <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
@@ -75,7 +77,7 @@
             <div id="audioCompatMsg"></div>
           </div>
           <div class="fgroup">
-            <label class="flabel">Max tokens</label>
+            <label class="flabel" for="cfgMaxTokens">Max tokens</label>
             <input class="finput" id="cfgMaxTokens" type="text" value="8192" />
           </div>
         </div>
@@ -90,7 +92,7 @@
       <div class="cfg-section">
         <div class="cfg-section-title">Personnalisation</div>
         <div class="fgroup">
-          <label class="flabel">Contexte métier additionnel (optionnel)</label>
+          <label class="flabel" for="cfgContext">Contexte métier additionnel (optionnel)</label>
           <textarea class="ftextarea" id="cfgContext" placeholder="Ex : contexte SNCF, direction TER, contraintes réseau interne..."></textarea>
           <div class="fhint">Ajouté au prompt système pour contextualiser les livrables.</div>
         </div>
@@ -102,14 +104,14 @@
         <div class="gap8" style="margin-bottom:8px;">
           <button class="btn sm" onclick="document.getElementById('designFilePicker').click()">📄 Importer un design.md</button>
           <button class="btn sm danger" id="clearDesignBtn" style="display:none;" onclick="clearDesignMd()">✕ Effacer</button>
-          <input id="designFilePicker" type="file" style="display:none" accept=".md,.txt" onchange="handleDesignFileSelect(this)" />
+          <input id="designFilePicker" type="file" style="display:none" aria-label="Importer un fichier design.md" accept=".md,.txt" onchange="handleDesignFileSelect(this)" />
         </div>
         <div class="fgroup">
-          <label class="flabel">Contenu design.md <span style="font-weight:400;opacity:0.6;">(éditable)</span></label>
+          <label class="flabel" for="designMdArea">Contenu design.md <span style="font-weight:400;opacity:0.6;">(éditable)</span></label>
           <textarea class="ftextarea" id="designMdArea" placeholder="# Design System&#10;&#10;## Couleurs&#10;- Primaire : #0055A5&#10;- Accent : #FF6B35&#10;&#10;## Typographie&#10;- Police : Inter, sans-serif&#10;&#10;## Ton&#10;- Professionnel, direct, sans jargon..." style="min-height:140px;font-family:monospace;font-size:12px;" oninput="onDesignMdChange()"></textarea>
         </div>
         <div class="fgroup">
-          <label class="flabel">Nom de la marque / organisation <span style="font-weight:400;opacity:0.6;">(optionnel)</span></label>
+          <label class="flabel" for="cfgBrandName">Nom de la marque / organisation <span style="font-weight:400;opacity:0.6;">(optionnel)</span></label>
           <input class="finput" id="cfgBrandName" type="text" placeholder="Ex : Acme Corp, Mon Projet..." oninput="onBrandNameChange()" />
           <div class="fhint">Affiché dans la nav et le footer de l'application.</div>
         </div>
@@ -131,7 +133,7 @@
   <!-- ══ STEP 1 ══ -->
   <div class="panel visible" id="panel1">
 
-    <div id="cfgWarning" class="warn-box" style="display:none;">
+    <div id="cfgWarning" class="warn-box" role="alert" style="display:none;">
       ⚠ <strong>Configuration requise</strong> — Ouvrez le panneau ⚙ Configuration pour saisir votre clé API Anthropic.
     </div>
 
@@ -141,7 +143,7 @@
       <div class="step1-left">
         <div class="card source-card">
           <div class="card-hd">
-            <h3>Source du besoin</h3>
+            <h2>Source du besoin</h2>
           </div>
           <div class="card-bd">
 
@@ -178,7 +180,7 @@
                   <div class="cd-sub">ou <u>parcourir</u> — MP3, WAV, M4A, OGG, WEBM</div>
                 </div>
               </div>
-              <input id="audioPicker" type="file" style="display:none" accept=".mp3,.wav,.m4a,.ogg,.webm,.mp4,.aac,.flac" onchange="handleAudioSelect(this)" />
+              <input id="audioPicker" type="file" style="display:none" aria-label="Importer un fichier audio" accept=".mp3,.wav,.m4a,.ogg,.webm,.mp4,.aac,.flac" onchange="handleAudioSelect(this)" />
 
               <div id="audioLoaded" class="file-loaded" style="display:none;">
                 <span class="fl-icon">🎙</span>
@@ -193,7 +195,7 @@
               </div>
 
               <div class="progress-wrap" id="aProg"><div class="progress-fill" id="aProgFill"></div></div>
-              <div class="status-msg" id="aStatus"></div>
+              <div class="status-msg" id="aStatus" aria-live="polite"></div>
 
               <button class="btn-analyse" id="transcribeBtn" disabled onclick="runAnalysisFromAudio()">
                 Transcrire et analyser →
@@ -209,7 +211,7 @@
                   <div class="cd-sub">ou <u>parcourir</u> — PDF, .txt, .md</div>
                 </div>
               </div>
-              <input id="filePicker" type="file" style="display:none" accept=".pdf,.txt,.md,.text" onchange="handleFileSelect(this)" />
+              <input id="filePicker" type="file" style="display:none" aria-label="Importer un fichier PDF ou texte" accept=".pdf,.txt,.md,.text" onchange="handleFileSelect(this)" />
 
               <div id="fileLoaded" class="file-loaded" style="display:none;">
                 <span class="fl-icon">📄</span>
@@ -224,7 +226,7 @@
               </div>
 
               <div class="progress-wrap" id="fProg"><div class="progress-fill" id="fProgFill"></div></div>
-              <div class="status-msg" id="fStatus"></div>
+              <div class="status-msg" id="fStatus" aria-live="polite"></div>
 
               <button class="btn-analyse" id="analyzeBtn" disabled onclick="runAnalysis()">
                 Analyser et remplir →
@@ -242,7 +244,7 @@
             <!-- Live Dictation Zone -->
             <div id="zoneLive" class="method-zone" style="display:none;">
               <div class="live-controls">
-                <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="Démarrer / Arrêter la dictée">🎤</button>
+                <button class="mic-btn" id="micBtn" onclick="toggleMic()" aria-label="Démarrer la dictée" aria-pressed="false"><span aria-hidden="true">🎤</span></button>
                 <div>
                   <div id="micStatus" class="mic-status">Cliquez pour commencer</div>
                   <div id="liveInterim" class="live-interim"></div>
@@ -274,12 +276,12 @@
       <div class="step1-right">
         <div class="card questionnaire-card">
           <div class="card-hd">
-            <h3>Questionnaire de cadrage</h3>
+            <h2>Questionnaire de cadrage</h2>
             <span class="badge" id="qBadge">0 / 65</span>
           </div>
           <div class="q-progress-wrap">
             <div class="q-progress-bar"><div class="q-progress-fill" id="qProgressFill"></div></div>
-            <div class="q-progress-label" id="qProgressLabel">0 / 65 (0%)</div>
+            <div class="q-progress-label" id="qProgressLabel" aria-live="polite">0 / 65 (0%)</div>
           </div>
           <div class="card-bd" id="qBody"></div>
         </div>
@@ -298,19 +300,19 @@
         <!-- Statut génération -->
         <div class="card" id="genStatusCard" style="display:none;">
           <div class="card-hd">
-            <h3>Génération en cours</h3>
+            <h2>Génération en cours</h2>
             <span class="badge" id="genStatusBadge">0 / 3</span>
           </div>
           <div class="card-bd" style="padding:12px 20px;">
-            <div class="gen-item"><span class="gi-label">Synthèse</span><span class="gi-status" id="genStatusSynth">En attente</span></div>
-            <div class="gen-item"><span class="gi-label">Maquette</span><span class="gi-status" id="genStatusMock">En attente</span></div>
-            <div class="gen-item"><span class="gi-label">Pré-cadrage</span><span class="gi-status" id="genStatusCadrage">En attente</span></div>
+            <div class="gen-item"><span class="gi-label">Synthèse</span><span class="gi-status" id="genStatusSynth" aria-live="polite">En attente</span></div>
+            <div class="gen-item"><span class="gi-label">Maquette</span><span class="gi-status" id="genStatusMock" aria-live="polite">En attente</span></div>
+            <div class="gen-item"><span class="gi-label">Pré-cadrage</span><span class="gi-status" id="genStatusCadrage" aria-live="polite">En attente</span></div>
           </div>
         </div>
 
         <!-- Sélecteur de livrable -->
         <div class="card">
-          <div class="card-hd"><h3>Livrables</h3></div>
+          <div class="card-hd"><h2>Livrables</h2></div>
           <div class="card-bd">
             <div class="del-tiles">
               <button class="del-tile active" id="dtSynth" onclick="switchDel('synth')">
@@ -350,13 +352,13 @@
       <div class="step2-right">
         <div class="card del-frame-card">
           <div class="del-pane visible" id="dpSynth">
-            <iframe id="synthFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+            <iframe id="synthFrame" class="output-frame" sandbox="allow-same-origin" title="Synthèse structurée du cadrage"></iframe>
           </div>
           <div class="del-pane" id="dpMock">
-            <iframe id="mockFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+            <iframe id="mockFrame" class="output-frame" sandbox="allow-same-origin" title="Maquette applicative"></iframe>
           </div>
           <div class="del-pane" id="dpCadrage">
-            <iframe id="cadrageFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+            <iframe id="cadrageFrame" class="output-frame" sandbox="allow-same-origin" title="Pré-cadrage technique"></iframe>
           </div>
         </div>
       </div>
@@ -379,16 +381,16 @@
         Les données saisies (transcriptions, textes, questionnaire) sont envoyées à l'API Anthropic dans le cadre du traitement ;
         ne saisissez pas d'informations personnelles sensibles ou classifiées.
         L'utilisation de cet outil est soumise aux
-        <a href="https://www.anthropic.com/legal/consumer-usage-policy" target="_blank" rel="noopener">conditions d'utilisation d'Anthropic</a>.
+        <a href="https://www.anthropic.com/legal/consumer-usage-policy" target="_blank" rel="noopener" aria-label="Conditions d'utilisation d'Anthropic (nouvelle fenêtre)">conditions d'utilisation d'Anthropic<span class="sr-only"> (nouvelle fenêtre)</span></a>.
       </div>
     </div>
   </footer>
 
-</div>
+</main>
 
 <!-- overlay supprimé — config désormais dans panel0 -->
 
-<div class="toast" id="toast">✓ OK</div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">✓ OK</div>
 
 <script src="js/app.js"></script>
 </body>

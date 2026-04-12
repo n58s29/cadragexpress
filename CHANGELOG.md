@@ -7,22 +7,37 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ## [8.2.3] — 2026-04-12
 
-### Ajouté — Audit RGAA
+### Ajouté — Audit RGAA + Remédiation accessibilité (phase 1)
 
-- Ajout de `audit/audit-rgaa-2026-04-12.md` : audit d'accessibilité complet (RGAA 4.1) par analyse statique du code source v8.2.1
-- **Taux de conformité mesuré : ~32 % — Non conforme**
-- 13 non-conformités identifiées (5 critiques, 8 majeures/mineures) dont :
-  - 0 attribut ARIA dans tout le HTML (lecteur d'écran aveugle aux widgets personnalisés)
-  - 0 label associé aux champs de formulaire (attribut `for` absent sur tous les labels)
-  - 3 iframes sans attribut `title`
-  - Absence d'indicateurs de focus sur tous les boutons (hors inputs texte)
-  - Absence d'élément `<main>` et de lien d'évitement
-  - Hiérarchie de titres cassée (H1 → H3 sans H2)
-  - Aucune région `aria-live` pour les contenus dynamiques (statuts, toasts, erreurs)
-  - Animation infinie `.point-vivant` sans `prefers-reduced-motion`
-  - Contraste insuffisant sur `.q-item-answer` (#00b388, 11px → ratio 4,4:1)
-- Plan de remédiation en 3 phases : actions immédiates (~4h), composants interactifs (~8h), conformité renforcée (~12h)
-- README mis à jour : section Accessibilité ajoutée avec lien vers le rapport et taux de conformité
+**Audit RGAA 4.1 :**
+- Ajout de `audit/audit-rgaa-2026-04-12.md` : audit d'accessibilité complet (RGAA 4.1) par analyse statique du code source, mis à jour post-corrections v8.2.3
+- **Taux de conformité initial : ~32 % — Non conforme** → **~55 % — Partiellement conforme après corrections**
+
+**Corrections accessibilité appliquées (index.html) :**
+- Ajout du lien d'évitement `<a href="#main-content" class="skip-link">Aller au contenu principal</a>` [RGAA 12.7]
+- `<div class="main">` converti en `<main id="main-content" class="main">` [RGAA 9.2]
+- Attribut `for` ajouté sur les 6 labels de la section configuration (`cfgKey`, `cfgModel`, `cfgMaxTokens`, `cfgContext`, `designMdArea`, `cfgBrandName`) [RGAA 11.1]
+- `title` ajouté sur les 3 iframes livrables (`synthFrame`, `mockFrame`, `cadrageFrame`) — `sandbox` inchangé [RGAA 2.1]
+- `role="alert"` sur `#cfgWarning` [RGAA 7.5]
+- `aria-live="polite"` sur `#aStatus`, `#fStatus`, `#qProgressLabel`, `#genStatusSynth/Mock/Cadrage` [RGAA 7.5]
+- `role="status" aria-live="polite" aria-atomic="true"` sur `#toast` [RGAA 7.5]
+- `<h3>` → `<h2>` pour les 4 sections principales (Source du besoin, Questionnaire, Génération, Livrables) [RGAA 9.1]
+- `aria-label` + `<span class="sr-only"> (nouvelle fenêtre)</span>` sur le lien Anthropic [RGAA 6.2]
+- `aria-label` sur les 3 inputs `type="file"` masqués [RGAA 11.1]
+- `aria-pressed="false"` et `aria-label` sur le bouton microphone [RGAA 7.1]
+
+**Corrections accessibilité appliquées (css/style.css) :**
+- Règle `:focus-visible` globale (`outline: 2px solid var(--cerulean)`) [RGAA 10.7]
+- `outline: none` remplacé par `outline: 2px solid transparent` sur les inputs/textareas [RGAA 10.7]
+- `.sr-only` (masquage accessible) et `.skip-link` ajoutés [RGAA 12.7, 6.2]
+- `@media (prefers-reduced-motion: reduce)` : désactivation de `.point-vivant`, `.spinner`, `.mic-btn.recording` et réduction des transitions [RGAA 13.8]
+- Correction de contraste `.q-item-answer` : `#00b388` → `#008f6f` (ratio ≥ 4,5:1 — WCAG AA pour texte 11px) [RGAA 3.2]
+
+**Corrections accessibilité appliquées (js/app.js) :**
+- `renderAgentGrid()` : `role="switch"`, `aria-checked`, `aria-label` dynamique sur les toggles agents [RGAA 7.1]
+- `renderAgentGrid()` : `aria-label="Modifier le prompt de l'agent…"` sur le bouton ✎, emoji enveloppé `aria-hidden="true"` [RGAA 7.1]
+- `renderAgentGrid()` : `aria-label="Prompt de l'agent…"` sur les textareas de prompt [RGAA 11.1]
+- `startMic()` / `stopMic()` : mise à jour dynamique de `aria-pressed` et `aria-label` sur `#micBtn` [RGAA 7.1]
 
 ---
 

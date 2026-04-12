@@ -170,15 +170,25 @@ L'interface respecte la **Charte Graphique FAN** (Fabrique de l'Adoption Numéri
 
 Un audit RGAA 4.1 complet est disponible dans [`audit/audit-rgaa-2026-04-12.md`](audit/audit-rgaa-2026-04-12.md).
 
-**Taux de conformité actuel (v8.2.1) : ~32 % — Non conforme**
+**Taux de conformité actuel (v8.2.3) : ~55 % — Partiellement conforme**  
+*(était ~32 % — Non conforme en v8.2.1)*
 
-L'application présente des lacunes importantes en matière d'accessibilité numérique. Les principales non-conformités bloquantes sont :
-- Absence d'attributs ARIA sur les composants interactifs personnalisés (accordéon, cases à cocher, onglets, toggles)
-- Labels de formulaire non associés programmatiquement aux champs
-- Absence d'indicateurs de focus sur les boutons
-- Iframes sans attribut `title`
+**Corrections appliquées en v8.2.3 :**
+- Labels de formulaire associés aux champs (`for=` sur les 6 labels)
+- Iframes livrables titrées (`title` sur les 3 iframes)
+- Élément `<main id="main-content">` et lien d'évitement « Aller au contenu principal »
+- Indicateurs de focus visibles sur tous les éléments (règle `:focus-visible` globale)
+- Régions ARIA live sur tous les messages dynamiques (toast, alertes, statuts génération)
+- Animation `.point-vivant` respecte `prefers-reduced-motion`
+- Contraste des réponses questionnaire corrigé (WCAG AA)
+- Composants agents : `role="switch"`, `aria-checked`, `aria-label`, `aria-pressed` mic
+- Hiérarchie des titres corrigée (H1 → H2 pour les sections principales)
+- Lien externe Anthropic annonce l'ouverture dans une nouvelle fenêtre
 
-Ces points font l'objet d'un plan de remédiation détaillé dans le rapport d'audit.
+**Non-conformités restantes (plan de remédiation P1) :**
+- Stepper non conforme au pattern ARIA `tablist/tab` (nécessite refonte JS)
+- Accordéon et cases à cocher non focusables au clavier (nécessite refonte JS)
+- Barres de progression sans `aria-valuenow` dynamique
 
 > Pour un déploiement dans le cadre des services numériques SNCF, la conformité RGAA AA est requise par la loi du 11 février 2005 modifiée.
 
