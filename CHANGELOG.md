@@ -5,6 +5,19 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.2.2] — 2026-04-12
+
+### Modifié — Audit cybersécurité refait intégralement
+
+- Réécriture complète de `audit/audit-securite-2026-04-12.md` sur la base d'une analyse statique exhaustive du code v8.2.1
+- **Nouvelle vulnérabilité identifiée** — §3.5 [ÉLEVÉE] : `setGenStatus` utilise `innerHTML` pour afficher des fragments d'erreurs API, vecteur potentiel d'injection HTML en cas de MITM (correction : remplacer par `textContent`)
+- Score global actualisé : **5,5 → 6,0 / 10** (gain pour les deux correctifs v8.2.1 confirmés par vérification du code)
+- Confirmation des lignes exactes pour chaque vulnérabilité (index.html l. 353/356/359 sandbox, app.js l. 990 innerHTML, l. 1114/1157 verbosité erreurs, 8 `alert()` localisés)
+- Nouveau §13 — Synthèse exécutive pour décideurs : ce qui est bien, ce qui se corrige en < 1 h, ce qui nécessite une décision d'architecture
+- README mis à jour : ajout d'une section **Sécurité** avec tableau de recommandations par contexte de déploiement et lien vers le rapport d'audit
+
+---
+
 ## [8.2.1] — 2026-04-12
 
 ### Ajouté — Audit sécurité + renforcement BYOK

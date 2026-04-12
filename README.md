@@ -166,6 +166,30 @@ L'interface respecte la **Charte Graphique FAN** (Fabrique de l'Adoption Numéri
 
 ---
 
+## Sécurité
+
+L'application utilise le modèle **BYOK** (Bring Your Own Key) : chaque utilisateur fournit sa propre clé API Anthropic, stockée uniquement en mémoire navigateur.
+
+Un audit de sécurité complet est disponible dans [`audit/audit-securite-2026-04-12.md`](audit/audit-securite-2026-04-12.md).
+
+**Résumé :**
+
+| Contexte de déploiement | Recommandation |
+|------------------------|---------------|
+| Usage interne SNCF, réseau sécurisé, utilisateurs avertis | Acceptable |
+| Intranet sans garantie réseau | Acceptable après application des correctifs Semaine 1 |
+| Déploiement public ou multi-utilisateurs | Nécessite un proxy backend |
+| Données confidentielles ou classifiées | Déconseillé |
+
+**Mesures en place (v8.2.1) :**
+- Bandeau ambre dans la config : rappel visibilité DevTools et risques réseau non sécurisé
+- Détection HTTP automatique : bandeau rouge si l'application est servie hors HTTPS hors localhost
+- Clé API jamais persistée (ni localStorage, ni sessionStorage)
+- Communications Anthropic en HTTPS uniquement
+- Données en mémoire uniquement, effacées à la fermeture de l'onglet
+
+---
+
 ## Limitations connues
 
 - **PDFs scannés** : l'extraction de texte ne fonctionne que sur les PDF avec texte natif (non-OCR)
