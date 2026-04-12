@@ -1042,6 +1042,10 @@ Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
 }
 
 function buildCadragePrompt(ctx, designCtx, brandName) {
+  const appName = brandName || 'Cadrage Express';
+  const designSection = designCtx
+    ? `\n\nIDENTITÉ DE MARQUE (respecter impérativement pour couleurs, typographie et ton éditorial du document) :\n${designCtx}\n`
+    : `\n\n- Design sobre, lisible, imprimable : fond blanc, titres bleu #0088CE, tags orange #DC582A\n`;
   return ctx + `\n\nLIVRABLE 3 - PREMIERS ÉLÉMENTS DE CADRAGE TECHNIQUE
 Ce document est un PRÉ-CAHIER DES CHARGES que la personne qui cadre le projet va CONSERVER et utiliser comme SUPPORT DE TRAVAIL pour aller ensuite échanger avec les véritables experts humains (UX designer, architecte technique, financier, juridique, etc.).
 
@@ -1059,14 +1063,13 @@ Un document HTML structuré, dense et actionnable, organisé en sections claires
 RÈGLES ÉDITORIALES :
 - Ton professionnel mais direct
 - Privilégier les tableaux et listes structurées
-- Chaque élément incertain porte un tag visible en orange : 'À VALIDER', 'À CONFIRMER', 'HYPOTHÈSE'
-- Header : 'PREMIERS ÉLÉMENTS DE CADRAGE — [NOM DU PROJET]' + date + mention 'Cadrage Express v7 — Document de travail'
+- Chaque élément incertain porte un tag visible : 'À VALIDER', 'À CONFIRMER', 'HYPOTHÈSE'
+- Header : 'PREMIERS ÉLÉMENTS DE CADRAGE — [NOM DU PROJET]' + date + mention '${appName} — Document de travail'
 - Footer : 'Ce document est un pré-cadrage généré par IA. Il doit être confronté aux experts métier avant toute décision.'
-
+${designSection}
 RÈGLES TECHNIQUES :
-- Page HTML complète et autonome
-- Design sobre, lisible, imprimable : fond blanc, titres bleu SNCF #0088CE, tags orange #DC582A
-- Les tags 'À VALIDER' en <span> avec fond orange clair et texte #DC582A, bold
+- Page HTML complète et autonome (doctype, head avec <style> intégré, body)
+- Les tags 'À VALIDER' en <span> avec fond coloré selon l'identité de marque, bold
 
 Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
 }
@@ -1216,8 +1219,10 @@ function errorPage(msg) {
 function switchDel(which) {
   ['Synth','Mock','Cadrage'].forEach(k => {
     const key = k.toLowerCase();
-    document.getElementById('dt' + k).className = which === key ? 'del-tab active' : 'del-tab';
+    document.getElementById('dt' + k).className = which === key ? 'del-tile active' : 'del-tile';
     document.getElementById('dp' + k).className = which === key ? 'del-pane visible' : 'del-pane';
+    const dlEl = document.getElementById('dl' + k);
+    if (dlEl) dlEl.style.display = which === key ? 'block' : 'none';
   });
 }
 

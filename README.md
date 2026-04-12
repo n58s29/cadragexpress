@@ -62,6 +62,8 @@ Chaque agent enrichit les livrables selon son prisme d'expertise :
 2. **Maquette applicative** — Prototype HTML visuel de l'application envisagée
 3. **Pré-cadrage technique** — Exigences fonctionnelles/non-fonctionnelles, architecture, RGPD, questions ouvertes
 
+Les trois livrables respectent l'identité de marque définie dans la configuration (`design.md`) lorsqu'elle est fournie.
+
 ---
 
 ## Architecture
@@ -131,7 +133,8 @@ Ouvrir `index.html` directement dans le navigateur.
 3. **Analyser** — Claude remplit automatiquement le questionnaire (colonne droite)
 4. **Vérifier et compléter** manuellement les questions manquantes
 5. **Générer** les trois livrables via le bouton en bas de la colonne gauche
-6. **Télécharger** les fichiers HTML générés (onglet Livrables)
+6. **Consulter** chaque livrable via les tuiles Synthèse / Maquette / Pré-cadrage (colonne gauche de l'onglet Livrables)
+7. **Télécharger** les fichiers HTML générés depuis la colonne gauche
 
 ---
 

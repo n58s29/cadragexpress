@@ -5,6 +5,25 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.2.0] — 2026-04-12
+
+### Modifié — Page Livrables redessinée + correctif design system pré-cadrage
+
+**Page Livrables — cohérence visuelle avec Recueil :**
+- Nouveau layout `step2-grid` en 2 colonnes (même structure que Step 1) : colonne gauche sticky (statut + sélecteur + actions), colonne droite = iframe pleine hauteur
+- Remplacement des anciens onglets `.del-tab` par des tuiles verticales `.del-tile` (même style que les method tiles du Recueil)
+- Bouton "Télécharger" en `.btn-analyse` pleine largeur, cohérent avec le reste de l'interface
+- Bouton "Régénérer" en `.btn-generate` cerulean avec ombre
+- Iframe livrables en pleine hauteur viewport (`calc(100vh - 160px)`) au lieu de `min-height: 450px`
+- Suppression du `.output-bar` et du `.nav-row` de l'étape 2, remplacés par la structure colonne gauche
+
+**Correctif — Design system ignoré par le pré-cadrage technique :**
+- `buildCadragePrompt` recevait `designCtx` et `brandName` en paramètres mais ne les utilisait pas : couleurs et style hardcodés (`#0088CE`, `#DC582A`)
+- Le design system fourni par l'utilisateur (`design.md`) est désormais injecté dans le prompt du pré-cadrage, au même titre que la synthèse et la maquette
+- Le "v7" hardcodé dans le header du document généré est remplacé par le nom de marque configuré (ou "Cadrage Express" par défaut)
+
+---
+
 ## [8.1.0] — 2026-04-11
 
 ### Modifié — Refonte UX écran d'accueil + Config inline

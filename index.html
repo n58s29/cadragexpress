@@ -287,50 +287,78 @@
 
   <!-- ══ STEP 2 ══ -->
   <div class="panel" id="panel2">
+    <div class="step2-grid">
 
-    <div class="card" id="genStatusCard" style="display:none;">
-      <div class="card-hd">
-        <h3>Génération en cours</h3>
-        <span class="badge" id="genStatusBadge">0 / 3</span>
-      </div>
-      <div class="card-bd">
-        <div class="gen-item"><span class="gi-label">Synthèse structurée</span><span class="gi-status" id="genStatusSynth">En attente</span></div>
-        <div class="gen-item"><span class="gi-label">Maquette applicative</span><span class="gi-status" id="genStatusMock">En attente</span></div>
-        <div class="gen-item"><span class="gi-label">Pré-cadrage technique</span><span class="gi-status" id="genStatusCadrage">En attente</span></div>
-      </div>
-    </div>
+      <!-- ── Colonne gauche : navigation livrables ── -->
+      <div class="step2-left">
 
-    <div class="card" id="delCard">
-      <div class="del-tabs">
-        <button class="del-tab active" id="dtSynth" onclick="switchDel('synth')">📊 Synthèse</button>
-        <button class="del-tab" id="dtMock" onclick="switchDel('mock')">🖼 Maquette</button>
-        <button class="del-tab" id="dtCadrage" onclick="switchDel('cadrage')">📝 Pré-cadrage</button>
-      </div>
-
-      <div class="del-pane visible" id="dpSynth">
-        <div class="output-bar">
-          <button class="btn sm" onclick="downloadHtml(lastSynthHtml, 'cadrage_synthese.html')">💾 Télécharger</button>
+        <!-- Statut génération -->
+        <div class="card" id="genStatusCard" style="display:none;">
+          <div class="card-hd">
+            <h3>Génération en cours</h3>
+            <span class="badge" id="genStatusBadge">0 / 3</span>
+          </div>
+          <div class="card-bd" style="padding:12px 20px;">
+            <div class="gen-item"><span class="gi-label">Synthèse</span><span class="gi-status" id="genStatusSynth">En attente</span></div>
+            <div class="gen-item"><span class="gi-label">Maquette</span><span class="gi-status" id="genStatusMock">En attente</span></div>
+            <div class="gen-item"><span class="gi-label">Pré-cadrage</span><span class="gi-status" id="genStatusCadrage">En attente</span></div>
+          </div>
         </div>
-        <iframe id="synthFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
-      </div>
-      <div class="del-pane" id="dpMock">
-        <div class="output-bar">
-          <button class="btn sm" onclick="downloadHtml(lastMockHtml, 'cadrage_maquette.html')">💾 Télécharger</button>
-        </div>
-        <iframe id="mockFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
-      </div>
-      <div class="del-pane" id="dpCadrage">
-        <div class="output-bar">
-          <button class="btn sm" onclick="downloadHtml(lastCadrageHtml, 'cadrage_pre_cdc.html')">💾 Télécharger</button>
-        </div>
-        <iframe id="cadrageFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
-      </div>
-    </div>
 
-    <div class="nav-row">
-      <button class="btn" onclick="goStep(1)">← Modifier le questionnaire</button>
-      <button class="btn accent" onclick="generateCadrage()">🔄 Régénérer</button>
-    </div>
+        <!-- Sélecteur de livrable -->
+        <div class="card">
+          <div class="card-hd"><h3>Livrables</h3></div>
+          <div class="card-bd">
+            <div class="del-tiles">
+              <button class="del-tile active" id="dtSynth" onclick="switchDel('synth')">
+                <span class="dt-icon">📊</span>
+                <span class="dt-label">Synthèse structurée</span>
+              </button>
+              <button class="del-tile" id="dtMock" onclick="switchDel('mock')">
+                <span class="dt-icon">🖼</span>
+                <span class="dt-label">Maquette applicative</span>
+              </button>
+              <button class="del-tile" id="dtCadrage" onclick="switchDel('cadrage')">
+                <span class="dt-icon">📝</span>
+                <span class="dt-label">Pré-cadrage technique</span>
+              </button>
+            </div>
+
+            <!-- Téléchargement du livrable actif -->
+            <div id="dlSynth" class="dl-active">
+              <button class="btn-analyse" onclick="downloadHtml(lastSynthHtml, 'cadrage_synthese.html')">Télécharger →</button>
+            </div>
+            <div id="dlMock" class="dl-active" style="display:none;">
+              <button class="btn-analyse" onclick="downloadHtml(lastMockHtml, 'cadrage_maquette.html')">Télécharger →</button>
+            </div>
+            <div id="dlCadrage" class="dl-active" style="display:none;">
+              <button class="btn-analyse" onclick="downloadHtml(lastCadrageHtml, 'cadrage_pre_cdc.html')">Télécharger →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <button class="btn-generate" onclick="generateCadrage()">Régénérer les livrables →</button>
+        <button class="btn" style="width:100%;justify-content:center;margin-top:8px;" onclick="goStep(1)">← Modifier le questionnaire</button>
+
+      </div>
+
+      <!-- ── Colonne droite : iframe du livrable ── -->
+      <div class="step2-right">
+        <div class="card del-frame-card">
+          <div class="del-pane visible" id="dpSynth">
+            <iframe id="synthFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+          </div>
+          <div class="del-pane" id="dpMock">
+            <iframe id="mockFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+          </div>
+          <div class="del-pane" id="dpCadrage">
+            <iframe id="cadrageFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.step2-grid -->
   </div>
 
   <!-- Footer permanent -->
