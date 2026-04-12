@@ -418,6 +418,47 @@ function switchMethod(m) {
     if (el) el.style.display = k === m ? 'block' : 'none';
   });
   if (m !== 'live') stopMic();
+
+  // Mode manuel : activer les textareas + ouvrir tous les blocs
+  const qBody = document.getElementById('qBody');
+  if (m === 'manual') {
+    if (qBody) qBody.classList.add('manual-mode');
+    expandAllBlocs();
+    populateManualInputs();
+  } else {
+    if (qBody) qBody.classList.remove('manual-mode');
+  }
+}
+
+function expandAllBlocs() {
+  if (!questionDefs.blocs) return;
+  questionDefs.blocs.forEach(bloc => {
+    const body = document.getElementById('bbody_' + bloc.id);
+    const hd   = body?.previousElementSibling;
+    if (body) body.classList.add('open');
+    if (hd)   hd.classList.add('open');
+  });
+}
+
+function populateManualInputs() {
+  Object.entries(answeredQuestions).forEach(([qid, val]) => {
+    const ta = document.getElementById('qmi_' + qid.replace('.', '_'));
+    if (ta && !ta.value) ta.value = val === '✓ (coché manuellement)' ? '' : val;
+  });
+}
+
+function onManualInput(qid, value) {
+  const v = value.trim();
+  if (v) {
+    answeredQuestions[qid] = v;
+    _setCheckUI(qid, true, v);
+  } else {
+    delete answeredQuestions[qid];
+    _setCheckUI(qid, false, '');
+  }
+  const blocId = parseInt(qid.split('.')[0]);
+  updateBlocBadge(blocId);
+  updateQProgress();
 }
 
 /* ═══════════════════════════════════════
@@ -815,6 +856,9 @@ function renderQuestionnaire() {
             <div class="q-item-content">
               <div class="q-item-text">${esc(q.texte)}</div>
               <div class="q-item-answer" id="qans_${q.id.replace('.','_')}"></div>
+              <textarea class="q-manual-input" id="qmi_${q.id.replace('.','_')}"
+                placeholder="Saisissez votre réponse..."
+                oninput="onManualInput('${q.id}', this.value)"></textarea>
             </div>
           </div>`).join('')}
       </div>
@@ -832,6 +876,13 @@ function toggleBloc(id) {
 }
 
 function toggleManualCheck(qid) {
+  // En mode manuel, le clic sur la case focus le textarea de saisie
+  const qBody = document.getElementById('qBody');
+  if (qBody?.classList.contains('manual-mode')) {
+    const ta = document.getElementById('qmi_' + qid.replace('.', '_'));
+    if (ta) { ta.focus(); return; }
+  }
+  // Hors mode manuel : bascule simple cochée / décochée
   if (answeredQuestions[qid]) {
     delete answeredQuestions[qid];
     _setCheckUI(qid, false, '');

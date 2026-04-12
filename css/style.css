@@ -485,6 +485,19 @@ select.finput option {
 }
 .q-item.answered .q-item-answer { display: block; }
 
+.q-manual-input {
+  display: none;
+  width: 100%; margin-top: 6px;
+  font-size: 12px; font-weight: 300; font-family: var(--police-corps);
+  color: var(--sur-surface); background: var(--surface-flottante);
+  border: 1px solid var(--surface-haute); border-radius: 4px;
+  padding: 6px 8px; resize: vertical; min-height: 52px;
+  box-sizing: border-box; transition: border-color 0.2s;
+}
+.q-manual-input:focus { border-color: var(--cerulean); outline: none; }
+.q-manual-input::placeholder { color: var(--sur-surface-secondaire); opacity: 0.7; }
+#qBody.manual-mode .q-manual-input { display: block; }
+
 /* ═══════ BUTTONS ═══════ */
 .btn {
   display: inline-flex; align-items: center; gap: 6px;
