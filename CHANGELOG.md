@@ -5,6 +5,19 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.2.4] — 2026-04-12
+
+### Ajouté — Mode Manuel fonctionnel
+
+- **Saisie texte par question** : un textarea apparaît sous chaque question quand le mode Manuel est actif, permettant de saisir une vraie réponse (et pas seulement de cocher)
+- **Ouverture automatique des accordéons** : tous les blocs du questionnaire s'ouvrent au passage en mode Manuel — plus besoin de les dérouler un par un
+- **Sauvegarde en temps réel** : la saisie met à jour la case à cocher et la barre de progression au fur et à mesure
+- **Focus intelligent** : cliquer sur la case d'un item en mode Manuel focus directement le textarea correspondant
+- **Pré-remplissage** : si une analyse IA a déjà été effectuée, les réponses existantes sont pré-remplies dans les textareas au passage en mode Manuel
+- **Footer** : version corrigée de `v8.0` → `v8.2.3`
+
+---
+
 ## [8.2.3] — 2026-04-12
 
 ### Ajouté — Audit RGAA + Remédiation accessibilité (phase 1)

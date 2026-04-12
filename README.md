@@ -23,7 +23,7 @@ L'outil est conçu pour les équipes FAN / 574, les facilitateurs d'innovation e
 | Audio | Dictée en direct | Web Speech API (Chrome/Edge) avec analyse progressive |
 | Texte | PDF / .txt / .md | Extraction et analyse du texte |
 | Texte | Coller du texte | Analyse d'un CR de réunion ou expression de besoin |
-| Texte | Saisie manuelle | Remplissage direct du questionnaire |
+| Texte | Saisie manuelle | Remplissage direct du questionnaire avec un textarea par question, ouverture automatique des blocs |
 
 ### Questionnaire structuré
 
