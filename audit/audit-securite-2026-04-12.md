@@ -1,9 +1,10 @@
 # Audit de Sécurité — Cadrage Express
 
-**Date :** 2026-04-12  
-**Version auditée :** v8.2  
+**Date d'audit :** 2026-04-12  
+**Dernière mise à jour :** 2026-04-12  
+**Version auditée :** v8.2 → v8.2.1 (remédiation partielle appliquée)  
 **Périmètre :** Application SPA front-end uniquement (aucun backend)  
-**Niveau de risque global : MOYEN-ÉLEVÉ**
+**Niveau de risque global : MOYEN-ÉLEVÉ** *(inchangé — remédiation partielle)*
 
 ---
 
@@ -11,16 +12,16 @@
 
 Cadrage Express est une application web 100% client (Single Page Application) sans serveur propre. Elle communique directement du navigateur vers l'API Anthropic. L'application présente de **bonnes pratiques de base** mais comporte des **lacunes significatives** dans la configuration de sécurité, notamment l'exposition de la clé API depuis le navigateur et l'absence de headers de sécurité.
 
-### Score global : 5,5 / 10
+### Score global : 5,5 / 10 *(avant v8.2.1)*
 
-| Catégorie | Évaluation |
-|-----------|-----------|
-| Gestion des secrets | Insuffisant (clé API exposée côté client) |
-| XSS / Injection | Risque modéré (iframes non restreintes) |
-| Headers de sécurité | Absent (CSP, X-Frame-Options, HSTS) |
-| Dépendances tierces | Risque (PDF.js sans contrôle d'intégrité) |
-| Données sensibles | Acceptable (tout en mémoire, jamais persisté) |
-| Architecture | Risqué pour un déploiement public |
+| Catégorie | Évaluation | Statut v8.2.1 |
+|-----------|-----------|--------------|
+| Gestion des secrets | Insuffisant (clé API exposée côté client) | Partiellement traité — avertissement UI + détection HTTP ajoutés |
+| XSS / Injection | Risque modéré (iframes non restreintes) | Non traité |
+| Headers de sécurité | Absent (CSP, X-Frame-Options, HSTS) | Non traité |
+| Dépendances tierces | Risque (PDF.js sans contrôle d'intégrité) | Non traité |
+| Données sensibles | Acceptable (tout en mémoire, jamais persisté) | Inchangé — OK |
+| Architecture | Risqué pour un déploiement public | Inchangé |
 
 ---
 
@@ -28,13 +29,13 @@ Cadrage Express est une application web 100% client (Single Page Application) sa
 
 ### Répartition par sévérité
 
-| Sévérité | Nombre | Catégories |
-|----------|--------|-----------|
-| **CRITIQUE** | 1 | Exposition clé API depuis le navigateur |
-| **ÉLEVÉE** | 4 | Injection HTML dans iframes, CSP absente, sandbox iframe insuffisant, handlers inline |
-| **MOYENNE** | 5 | Visibilité mot de passe, HTTPS non vérifié, X-Frame-Options absent, fuites d'erreurs, validation des entrées |
-| **FAIBLE** | 4 | Logs console, alert() navigateur, absence de timeout API, micro non libéré |
-| **INFO** | 4 | Flux de données, versions dépendances, CORS, architecture |
+| Sévérité | Nombre | Catégories | Traité en v8.2.1 |
+|----------|--------|-----------|-----------------|
+| **CRITIQUE** | 1 | Exposition clé API depuis le navigateur | Partiellement (avertissement UI + détection HTTP) |
+| **ÉLEVÉE** | 4 | Injection HTML dans iframes, CSP absente, sandbox iframe insuffisant, handlers inline | Non |
+| **MOYENNE** | 5 | Visibilité mot de passe, HTTPS non vérifié, X-Frame-Options absent, fuites d'erreurs, validation des entrées | HTTPS vérifié (détection HTTP) |
+| **FAIBLE** | 4 | Logs console, alert() navigateur, absence de timeout API, micro non libéré | Non |
+| **INFO** | 4 | Flux de données, versions dépendances, CORS, architecture | Non |
 
 ---
 
@@ -71,6 +72,12 @@ const response = await fetch('https://api.anthropic.com/v1/messages', {
 1. **(Idéal)** Implémenter un proxy backend : `Navigateur → Proxy authentifié → API Anthropic`. La clé n'est jamais côté client.
 2. **(Minimum)** Ajouter un avertissement visible lors de la configuration de la clé API.
 3. Documenter clairement les risques dans le README pour les déployeurs.
+
+**Statut v8.2.1 — Partiellement traité :**
+- ✅ Bandeau ambre visible dans la config clé API ([index.html](../index.html) ligne 60) : avertissement sur la visibilité DevTools et les réseaux non sécurisés
+- ✅ Détection HTTP au démarrage ([js/app.js](../js/app.js)) : bandeau rouge fixe si l'application est servie en HTTP hors `localhost`/`127.0.0.1`
+- ✅ README mis à jour avec les précautions d'usage
+- ⏳ Proxy backend non implémenté — reste recommandé pour un déploiement public
 
 ---
 
@@ -192,14 +199,19 @@ document.getElementById('btnConfig').addEventListener('click', openConfig);
 
 ---
 
-### 4.2 Absence de vérification HTTPS [MOYENNE]
+### 4.2 Absence de vérification HTTPS [MOYENNE] — ✅ Traité en v8.2.1
 
 **Description :** L'application peut être servie en HTTP, exposant la clé API en transit.  
-**Recommandation :** Ajouter au démarrage dans [js/app.js](../js/app.js) :
+**Statut :** Corrigé dans [js/app.js](../js/app.js) — IIFE exécutée au chargement :
 ```javascript
-if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-  alert('⚠ Cette application doit être servie en HTTPS. Votre clé API est en risque !');
-}
+(function checkHttps() {
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#dc2626;color:#fff;...';
+    banner.innerHTML = '⚠ Cette application est servie en HTTP. Votre clé API Anthropic transitera en clair sur le réseau.';
+    document.body.prepend(banner);
+  }
+})();
 ```
 
 ---
@@ -357,7 +369,8 @@ Ou héberger PDF.js localement dans `assets/`.
 
 - [ ] **Restreindre le sandbox des iframes** : `sandbox="allow-same-origin"` → `sandbox=""`
 - [ ] **Ajouter la CSP** : meta tag dans `<head>` de [index.html](../index.html)
-- [ ] **Ajouter vérification HTTPS** : alerte au démarrage si HTTP en production
+- [x] **Ajouter vérification HTTPS** : bandeau rouge au démarrage si HTTP hors localhost *(v8.2.1)*
+- [x] **Avertissement clé API** : bandeau ambre dans le panneau de configuration *(v8.2.1)*
 - [ ] **Sanitiser les messages d'erreur API** : mapper les codes vers messages génériques
 
 ### Semaines 2–3 — Court terme
@@ -382,6 +395,16 @@ Ou héberger PDF.js localement dans `assets/`.
 | Usage interne SNCF sur réseau sécurisé par des utilisateurs avertis | Acceptable avec mesures immédiates |
 | Déploiement public ou multi-utilisateurs | Nécessite un proxy backend avant mise en production |
 | Traitement de données confidentielles ou classifiées | Déconseillé dans l'état actuel |
+
+---
+
+---
+
+## 12. Historique des Remédiations
+
+| Version | Date | Modifications |
+|---------|------|--------------|
+| v8.2.1 | 2026-04-12 | Avertissement ambre clé API dans config ; détection HTTP + bandeau rouge au chargement ; README mis à jour |
 
 ---
 
