@@ -5,6 +5,18 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.2.5] — 2026-04-12
+
+### Ajouté — Modal de bienvenue et avertissement données sensibles
+
+- **Pop-up d'accueil** : modal centré affiché automatiquement à l'ouverture de l'application, présentant Cadrage Express et ses fonctionnalités en quelques lignes
+- **Avertissement données sensibles** : bloc d'alerte explicite dans le modal — ne pas saisir de données personnelles (noms, matricules, coordonnées…) ni de données à valeur (informations confidentielles, classifiées, secrets commerciaux…)
+- **Case "Ne plus afficher"** : l'utilisateur peut masquer définitivement le modal via `localStorage` (persistance navigateur)
+- **Fermeture** : bouton "J'ai compris" ou clic sur le fond sombre
+- Style cohérent avec le design system FAN (mêmes variables CSS, même palette)
+
+---
+
 ## [8.2.4] — 2026-04-12
 
 ### Ajouté — Mode Manuel fonctionnel

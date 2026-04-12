@@ -202,8 +202,26 @@ async function init() {
   onModelChange();
   updateCfg();
   initDragDrop();
+  openWelcome();
 }
 init();
+
+/* ═══════════════════════════════════════
+   MODAL BIENVENUE
+   ═══════════════════════════════════════ */
+function openWelcome() {
+  if (localStorage.getItem('ce_welcome_dismissed') === '1') return;
+  const overlay = document.getElementById('welcomeOverlay');
+  if (overlay) overlay.classList.remove('hidden');
+}
+
+function closeWelcome() {
+  const overlay = document.getElementById('welcomeOverlay');
+  if (!overlay) return;
+  const cb = document.getElementById('welcomeNePlusAfficher');
+  if (cb && cb.checked) localStorage.setItem('ce_welcome_dismissed', '1');
+  overlay.classList.add('hidden');
+}
 
 /* ═══════════════════════════════════════
    AGENTS

@@ -173,6 +173,8 @@ Un audit RGAA 4.1 complet est disponible dans [`audit/audit-rgaa-2026-04-12.md`]
 **Taux de conformité actuel (v8.2.3) : ~55 % — Partiellement conforme**  
 *(était ~32 % — Non conforme en v8.2.1)*
 
+
+
 **Corrections appliquées en v8.2.3 :**
 - Labels de formulaire associés aux champs (`for=` sur les 6 labels)
 - Iframes livrables titrées (`title` sur les 3 iframes)
@@ -229,6 +231,19 @@ Un audit de sécurité complet est disponible dans [`audit/audit-securite-2026-0
 
 ---
 
+## Données personnelles et données sensibles
+
+Un **modal d'avertissement** s'affiche automatiquement à l'ouverture de l'application (depuis v8.2.5). Il rappelle :
+
+- **Ne pas saisir de données personnelles** (noms, matricules, coordonnées, données RH…)
+- **Ne pas saisir de données à valeur** (informations confidentielles, classifiées, secrets commerciaux, données financières non publiques…)
+
+Les textes saisis sont transmis à l'API Anthropic pour traitement. Utiliser des données anonymisées ou fictives si nécessaire.
+
+L'utilisateur peut cocher "Ne plus afficher" pour masquer le modal lors des sessions suivantes.
+
+---
+
 ## Mentions d'utilisation
 
 Les contenus produits par Cadrage Express sont générés par intelligence artificielle (Claude, Anthropic) et ont une valeur **indicative**. Ils doivent être relus, validés et complétés par les experts métier et techniques concernés avant toute décision ou engagement. Ne saisissez pas d'informations personnelles sensibles ou classifiées. L'utilisation est soumise aux [conditions d'utilisation Anthropic](https://www.anthropic.com/legal/consumer-usage-policy).
@@ -241,4 +256,4 @@ Le projet est maintenu par l'équipe FAN / 574. Pour toute suggestion ou anomali
 
 ---
 
-*Cadrage Express — Fabrique de l'Adoption Numérique — e.SNCF Solutions*
+*Cadrage Express v8.2.5 — Fabrique de l'Adoption Numérique — e.SNCF Solutions*
