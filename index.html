@@ -57,7 +57,10 @@
             <input class="finput" id="cfgKey" type="password" placeholder="sk-ant-..." style="flex:1;" oninput="updateCfg()" />
             <button class="btn sm" onclick="toggleKey()">👁</button>
           </div>
-          <div class="fhint">Votre clé API Anthropic (BYOK). Stockée uniquement en mémoire navigateur.</div>
+          <div class="fhint" style="display:flex;align-items:flex-start;gap:6px;color:#92400e;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:8px 10px;margin-top:4px;">
+            <span style="flex-shrink:0;font-size:14px;">⚠</span>
+            <span>La clé API transite en HTTPS vers Anthropic et reste <strong>visible dans l'onglet Réseau des DevTools</strong> du navigateur. Ne saisissez pas votre clé sur un réseau non sécurisé et évitez de partager votre écran lorsqu'elle est affichée.</span>
+          </div>
         </div>
         <div class="grid-2">
           <div class="fgroup">

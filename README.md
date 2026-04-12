@@ -125,6 +125,7 @@ Ouvrir `index.html` directement dans le navigateur.
 5. Cliquer sur **Commencer le recueil →** pour passer à l'étape suivante
 
 > **Sécurité :** la clé API est stockée uniquement en mémoire navigateur (non persistée). Elle est effacée à la fermeture de l'onglet.
+> **Important :** la clé transite en HTTPS vers l'API Anthropic et reste visible dans l'onglet Réseau des DevTools du navigateur (pattern BYOK). Ne saisissez pas votre clé sur un réseau non sécurisé. L'application affiche un bandeau d'avertissement si elle est servie en HTTP hors localhost.
 
 ### Workflow type
 

@@ -5,6 +5,20 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.2.1] — 2026-04-12
+
+### Ajouté — Audit sécurité + renforcement BYOK
+
+**Audit de sécurité :**
+- Ajout du dossier `audit/` avec le rapport d'audit cybersécurité complet (`audit-securite-2026-04-12.md`) : 12 vulnérabilités identifiées et classifiées (CVSS), recommandations, plan de remédiation et conformité OWASP Top 10
+
+**Sécurité — Gestion de la clé API (BYOK) :**
+- Avertissement visible dans le panneau de configuration : bandeau ambre expliquant la visibilité de la clé dans les DevTools et déconseillant les réseaux non sécurisés
+- Détection automatique HTTP : bandeau rouge fixe affiché au chargement si l'application est servie en HTTP hors `localhost` / `127.0.0.1`
+- README mis à jour avec les précautions d'usage réseau
+
+---
+
 ## [8.2.0] — 2026-04-12
 
 ### Modifié — Page Livrables redessinée + correctif design system pré-cadrage

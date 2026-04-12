@@ -168,6 +168,18 @@ const modelDefs = [
 /* ═══════════════════════════════════════
    INIT
    ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   SÉCURITÉ — Vérification HTTPS
+   ═══════════════════════════════════════ */
+(function checkHttps() {
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#dc2626;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:600;';
+    banner.innerHTML = '⚠ Cette application est servie en HTTP. Votre clé API Anthropic transitera en clair sur le réseau. Utilisez HTTPS en production.';
+    document.body.prepend(banner);
+  }
+})();
+
 async function init() {
   try {
     const res = await fetch('data/cadrage-questions.json');
