@@ -166,6 +166,24 @@ L'interface respecte la **Charte Graphique FAN** (Fabrique de l'Adoption Numéri
 
 ---
 
+## Accessibilité
+
+Un audit RGAA 4.1 complet est disponible dans [`audit/audit-rgaa-2026-04-12.md`](audit/audit-rgaa-2026-04-12.md).
+
+**Taux de conformité actuel (v8.2.1) : ~32 % — Non conforme**
+
+L'application présente des lacunes importantes en matière d'accessibilité numérique. Les principales non-conformités bloquantes sont :
+- Absence d'attributs ARIA sur les composants interactifs personnalisés (accordéon, cases à cocher, onglets, toggles)
+- Labels de formulaire non associés programmatiquement aux champs
+- Absence d'indicateurs de focus sur les boutons
+- Iframes sans attribut `title`
+
+Ces points font l'objet d'un plan de remédiation détaillé dans le rapport d'audit.
+
+> Pour un déploiement dans le cadre des services numériques SNCF, la conformité RGAA AA est requise par la loi du 11 février 2005 modifiée.
+
+---
+
 ## Sécurité
 
 L'application utilise le modèle **BYOK** (Bring Your Own Key) : chaque utilisateur fournit sa propre clé API Anthropic, stockée uniquement en mémoire navigateur.

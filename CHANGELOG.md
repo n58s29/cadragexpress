@@ -5,6 +5,27 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.2.3] — 2026-04-12
+
+### Ajouté — Audit RGAA
+
+- Ajout de `audit/audit-rgaa-2026-04-12.md` : audit d'accessibilité complet (RGAA 4.1) par analyse statique du code source v8.2.1
+- **Taux de conformité mesuré : ~32 % — Non conforme**
+- 13 non-conformités identifiées (5 critiques, 8 majeures/mineures) dont :
+  - 0 attribut ARIA dans tout le HTML (lecteur d'écran aveugle aux widgets personnalisés)
+  - 0 label associé aux champs de formulaire (attribut `for` absent sur tous les labels)
+  - 3 iframes sans attribut `title`
+  - Absence d'indicateurs de focus sur tous les boutons (hors inputs texte)
+  - Absence d'élément `<main>` et de lien d'évitement
+  - Hiérarchie de titres cassée (H1 → H3 sans H2)
+  - Aucune région `aria-live` pour les contenus dynamiques (statuts, toasts, erreurs)
+  - Animation infinie `.point-vivant` sans `prefers-reduced-motion`
+  - Contraste insuffisant sur `.q-item-answer` (#00b388, 11px → ratio 4,4:1)
+- Plan de remédiation en 3 phases : actions immédiates (~4h), composants interactifs (~8h), conformité renforcée (~12h)
+- README mis à jour : section Accessibilité ajoutée avec lien vers le rapport et taux de conformité
+
+---
+
 ## [8.2.2] — 2026-04-12
 
 ### Modifié — Audit cybersécurité refait intégralement
