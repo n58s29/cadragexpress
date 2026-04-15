@@ -494,7 +494,7 @@ function toggleMic() {
 function startMic() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
-    alert('La reconnaissance vocale n\'est pas supportée par ce navigateur.\nUtilisez Chrome ou Edge.');
+    showToast('⚠ Reconnaissance vocale non supportée — utilisez Chrome ou Edge.');
     return;
   }
   recognition = new SR();
@@ -592,7 +592,7 @@ async function scheduleLiveAnalysis() {
 
 async function runAnalysisFromLive() {
   const text = document.getElementById('liveTranscript').value.trim();
-  if (!text) { alert('La transcription est vide. Parlez d\'abord !'); return; }
+  if (!text) { showToast('⚠ La transcription est vide — parlez d\'abord.'); return; }
   document.getElementById('micStatus').textContent = '🔄 Analyse finale par Claude...';
   await analyzeText(text, 'aProg', 'aProgFill', 'aStatus');
   document.getElementById('micStatus').textContent =
@@ -752,7 +752,7 @@ function clearAudio() {
 async function runAnalysisFromAudio() {
   if (!loadedAudioBase64) return;
   const apiKey = document.getElementById('cfgKey').value.trim();
-  if (!apiKey) { openConfig(); alert('Veuillez saisir votre clé API Anthropic.'); return; }
+  if (!apiKey) { openConfig(); showToast('⚠ Veuillez saisir votre clé API Anthropic.'); return; }
 
   if (!questionDefs.blocs || questionDefs.blocs.length === 0) {
     setStatus('aStatus', '✕ Questionnaire non chargé — lancez via un serveur HTTP local.');
@@ -799,7 +799,7 @@ async function runAnalysis() {
 
 async function runAnalysisFromPaste() {
   const text = document.getElementById('pasteArea').value.trim();
-  if (!text) { alert('Veuillez coller du texte avant de lancer l\'analyse.'); return; }
+  if (!text) { showToast('⚠ Veuillez coller du texte avant de lancer l\'analyse.'); return; }
   await analyzeText(text, 'fProg', 'fProgFill', 'fStatus');
 }
 
@@ -826,7 +826,7 @@ Exemple : {"1.1": "Automatiser les rapports mensuels", "2.1": "Suite à un audit
 
 async function analyzeText(text, progId = 'fProg', fillId = 'fProgFill', statusId = 'fStatus') {
   const apiKey = document.getElementById('cfgKey').value.trim();
-  if (!apiKey) { openConfig(); alert('Veuillez saisir votre clé API Anthropic.'); return; }
+  if (!apiKey) { openConfig(); showToast('⚠ Veuillez saisir votre clé API Anthropic.'); return; }
   if (!questionDefs.blocs || questionDefs.blocs.length === 0) {
     setStatus(statusId, '✕ Questionnaire non chargé — lancez via un serveur HTTP local (voir encart ci-dessous).');
     return;
@@ -982,7 +982,7 @@ function updateQProgress() {
    ═══════════════════════════════════════ */
 async function generateCadrage() {
   const apiKey = document.getElementById('cfgKey').value.trim();
-  if (!apiKey) { openConfig(); alert('Veuillez saisir votre clé API Anthropic.'); return; }
+  if (!apiKey) { openConfig(); showToast('⚠ Veuillez saisir votre clé API Anthropic.'); return; }
 
   const questionnaire = {};
   if (questionDefs.blocs) {
@@ -997,7 +997,7 @@ async function generateCadrage() {
 
   const filledCount = Object.keys(answeredQuestions).length;
   if (filledCount === 0) {
-    alert('Veuillez répondre à au moins une question avant de générer.'); return;
+    showToast('⚠ Veuillez répondre à au moins une question avant de générer.'); return;
   }
 
   goStep(2);
@@ -1007,9 +1007,9 @@ async function generateCadrage() {
   document.getElementById('genStatusCard').style.display = 'block';
   document.getElementById('genStatusBadge').textContent = '0 / 3';
   document.getElementById('genStatusBadge').className = 'badge';
-  setGenStatus('Synth', 'pending', '<span class="spinner"></span> Appel API...');
-  setGenStatus('Mock', 'pending', '<span class="spinner"></span> Appel API...');
-  setGenStatus('Cadrage', 'pending', '<span class="spinner"></span> Appel API...');
+  setGenStatus('Synth', 'pending', '<span class="spinner"></span> Appel API...', true);
+  setGenStatus('Mock', 'pending', '<span class="spinner"></span> Appel API...', true);
+  setGenStatus('Cadrage', 'pending', '<span class="spinner"></span> Appel API...', true);
 
   writeToFrame('synthFrame', loadingPage('Synthèse'));
   writeToFrame('mockFrame', loadingPage('Maquette'));
@@ -1060,10 +1060,11 @@ async function genDeliverable(apiKey, systemCtx, prompt, key, frameId, statusKey
   onGenPartDone();
 }
 
-function setGenStatus(key, cls, html) {
+function setGenStatus(key, cls, content, isHtml = false) {
   const el = document.getElementById('genStatus' + key);
   el.className = 'gi-status ' + cls;
-  el.innerHTML = html;
+  if (isHtml) el.innerHTML = content;
+  else el.textContent = content;
 }
 
 function onGenPartDone() {
@@ -1256,7 +1257,7 @@ async function transcribeAudioWithWhisper(audioBase64, mediaType) {
    ═══════════════════════════════════════ */
 function printTrame() {
   if (!questionDefs.blocs || questionDefs.blocs.length === 0) {
-    alert('Questionnaire non chargé — lancez via un serveur HTTP local.');
+    showToast('⚠ Questionnaire non chargé — lancez via un serveur HTTP local.');
     return;
   }
 
@@ -1308,7 +1309,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:7.5pt;color:#1a1a1a;backgr
 </body></html>`;
 
   const win = window.open('', '_blank', 'width=820,height=1000');
-  if (!win) { alert('Fenêtre bloquée — autorisez les popups pour ce site.'); return; }
+  if (!win) { showToast('⚠ Fenêtre bloquée — autorisez les popups pour ce site.'); return; }
   win.document.write(html);
   win.document.close();
 }
@@ -1390,7 +1391,7 @@ function switchDel(which) {
    DOWNLOAD
    ═══════════════════════════════════════ */
 function downloadHtml(html, filename) {
-  if (!html) { alert('Aucun contenu à télécharger.'); return; }
+  if (!html) { showToast('⚠ Aucun contenu à télécharger.'); return; }
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

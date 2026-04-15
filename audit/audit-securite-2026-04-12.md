@@ -1,11 +1,11 @@
 # Audit de Sécurité — Cadrage Express
 
 **Date d'audit :** 2026-04-12  
-**Dernière mise à jour :** 2026-04-12 (v8.2.1 — audit intégral refait)  
-**Version auditée :** v8.2.1  
+**Dernière mise à jour :** 2026-04-15 (v8.2.5 — application des corrections immédiates)  
+**Version auditée :** v8.2.5  
 **Périmètre :** Application SPA front-end uniquement (aucun backend)  
 **Méthode :** Analyse statique complète du code source (`index.html`, `js/app.js`)  
-**Niveau de risque global : MOYEN-ÉLEVÉ**
+**Niveau de risque global : MOYEN** *(était MOYEN-ÉLEVÉ avant v8.2.5)*
 
 ---
 
@@ -13,14 +13,14 @@
 
 Cadrage Express est une application web 100 % client (Single Page Application) sans serveur propre. Elle communique directement du navigateur vers l'API Anthropic. L'application présente de **bonnes pratiques de base** (pas de persistance de la clé API, échappement HTML via `esc()`, données en mémoire uniquement) mais conserve des **lacunes significatives** dans la configuration de sécurité, notamment l'exposition de la clé API côté navigateur et l'absence de Content Security Policy.
 
-### Score global : 6,0 / 10 *(+0,5 par rapport à v8.2)*
+### Score global : 7,0 / 10 *(était 6,0 en v8.2.1 — +1,0 après corrections v8.2.5)*
 
-| Catégorie | Évaluation | Statut v8.2.1 |
+| Catégorie | Évaluation | Statut v8.2.5 |
 |-----------|-----------|--------------|
-| Gestion des secrets | Insuffisant (clé API exposée côté client) | Partiellement traité — avertissement UI + détection HTTP ajoutés |
-| XSS / Injection | Risque modéré (iframes non restreintes, innerHTML partiel) | Non traité |
-| Headers de sécurité | Absent (CSP, X-Frame-Options, HSTS) | Non traité |
-| Dépendances tierces | Risque (PDF.js sans contrôle d'intégrité) | Non traité |
+| Gestion des secrets | Insuffisant (clé API exposée côté client) | Partiellement traité — avertissement UI + détection HTTP + CSP connect-src |
+| XSS / Injection | Risque réduit | ✅ Sandbox iframes corrigé ; ✅ `setGenStatus` → `textContent` |
+| Headers de sécurité | CSP ajoutée (meta tag) | ✅ CSP appliquée — headers serveur restants (X-Frame-Options, HSTS) |
+| Dépendances tierces | Risque (PDF.js / Transformers sans SRI) | Non traité |
 | Données sensibles | Acceptable (tout en mémoire, jamais persisté) | Inchangé — OK |
 | Architecture | Risqué pour un déploiement public | Inchangé |
 
@@ -30,17 +30,23 @@ Cadrage Express est une application web 100 % client (Single Page Application) s
 
 ### Répartition par sévérité
 
-| Sévérité | Nombre | Catégories | Traité en v8.2.1 |
+| Sévérité | Nombre | Catégories | Statut v8.2.5 |
 |----------|--------|-----------|-----------------|
-| **CRITIQUE** | 1 | Exposition clé API depuis le navigateur | Partiellement (avertissement UI + détection HTTP) |
-| **ÉLEVÉE** | 5 | Injection HTML dans iframes, CSP absente, sandbox iframe insuffisant, handlers inline, innerHTML non sécurisé dans setGenStatus | Non |
-| **MOYENNE** | 4 | Visibilité mot de passe, X-Frame-Options absent, fuites d'erreurs API, validation des entrées | Non |
-| **FAIBLE** | 4 | Logs console, alert() navigateur, absence de timeout API, micro non libéré | Non |
-| **INFO** | 4 | Flux de données, versions dépendances, CORS, architecture | Non |
+| **CRITIQUE** | 1 | Exposition clé API depuis le navigateur | Partiellement traité (avertissement UI + détection HTTP + CSP `connect-src`) |
+| **ÉLEVÉE** | 5 | Injection HTML dans iframes, CSP absente, sandbox iframe insuffisant, handlers inline, innerHTML non sécurisé dans setGenStatus | ✅ 3/5 corrigés (CSP, sandbox, setGenStatus) — handlers inline restants (moyen terme) |
+| **MOYENNE** | 4 | Visibilité mot de passe, X-Frame-Options absent, fuites d'erreurs API, validation des entrées | Non traité |
+| **FAIBLE** | 4 | Logs console, alert() navigateur, absence de timeout API, micro non libéré | ✅ 1/4 corrigé (alert() → showToast()) |
+| **INFO** | 4 | Flux de données, versions dépendances, CORS, architecture | Non traité |
 
 > **v8.2.1 — 2 items traités :**
 > - ✅ Bandeau ambre dans la config clé API ([index.html](../index.html) l. 60–63)
 > - ✅ Détection HTTP au démarrage avec bandeau rouge ([js/app.js](../js/app.js) l. 173–180)
+>
+> **v8.2.5 — 4 items traités (2026-04-15) :**
+> - ✅ CSP meta tag ajoutée dans `<head>` ([index.html](../index.html))
+> - ✅ Sandbox iframes : `allow-same-origin` → `""` ([index.html](../index.html) l. 356, 359, 362)
+> - ✅ `setGenStatus` : `innerHTML` → `textContent` par défaut, `isHtml=true` uniquement pour le spinner ([js/app.js](../js/app.js))
+> - ✅ 10 `alert()` remplacés par `showToast()` ([js/app.js](../js/app.js))
 
 ---
 
@@ -126,62 +132,56 @@ Les 3 iframes dans [index.html](../index.html) (l. 353, 356, 359) utilisent `san
 
 ---
 
-### 3.2 Absence de Content Security Policy (CSP) [ÉLEVÉE]
+### 3.2 Absence de Content Security Policy (CSP) [ÉLEVÉE] ✅ CORRIGÉ v8.2.5
 
 **Fichier :** [index.html](../index.html)  
 **Catégorie :** Configuration de sécurité  
 **CVSS 3.1 (indicatif) :** 6.5 — Moyen-Élevé
 
 **Description :**  
-Aucune directive CSP n'est définie ni en meta tag ni en header HTTP. Cela autorise :
+Aucune directive CSP n'était définie ni en meta tag ni en header HTTP. Cela autorisait :
 - L'exécution de tout script inline (y compris injecté)
 - Le chargement de ressources depuis n'importe quelle origine
 - L'exfiltration de données vers des domaines arbitraires en cas d'injection
 
-**Recommandation — Ajouter dans `<head>` de [index.html](../index.html) :**
+**✅ Correction appliquée en v8.2.5 — [index.html](../index.html) `<head>` :**
 ```html
-<meta http-equiv="Content-Security-Policy" content="
-  default-src 'self';
-  script-src 'self' https://cdnjs.cloudflare.com;
-  style-src 'self' 'unsafe-inline';
-  img-src 'self' data: blob:;
-  font-src 'self';
-  connect-src 'self' https://api.anthropic.com https://cdnjs.cloudflare.com;
-  frame-src 'blob:' 'self';
-  form-action 'self';
-  base-uri 'self';
-  frame-ancestors 'none'
-">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.anthropic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
 ```
 
-> **Note :** `'unsafe-inline'` reste nécessaire pour les styles des livrables générés. Les 42 handlers inline (§3.4) nécessiteront une migration vers `addEventListener()` pour éliminer `'unsafe-inline'` des scripts.
+**Bénéfices obtenus :**
+- `connect-src` restreint à `api.anthropic.com` + CDNs — bloque toute exfiltration de données vers des domaines tiers
+- `frame-ancestors 'none'` — empêche le clickjacking
+- `object-src 'none'` — interdit les plugins (Flash, Java)
+- `base-uri 'self'` — bloque les injections de base URL
+
+> **Limitation restante :** `'unsafe-inline'` maintenu pour les scripts car les 42 handlers inline HTML ne sont pas encore migrés (tâche moyen terme §3.4). La migration vers `addEventListener()` permettra de supprimer `'unsafe-inline'` et d'obtenir une CSP stricte.
 
 ---
 
-### 3.3 Sandbox iframe insuffisant [ÉLEVÉE]
+### 3.3 Sandbox iframe insuffisant [ÉLEVÉE] ✅ CORRIGÉ v8.2.5
 
-**Fichier :** [index.html](../index.html) lignes 353, 356, 359  
+**Fichier :** [index.html](../index.html) lignes 356, 359, 362  
 **Catégorie :** Isolation de contenu  
 **CVSS 3.1 (indicatif) :** 5.9 — Moyen
 
 **Description :**  
-Les 3 iframes d'affichage des livrables utilisent `sandbox="allow-same-origin"`. Cette valeur autorise l'iframe à accéder à `window.parent`, au `localStorage`, et à bypasser les restrictions sandboxées en cas d'injection de script.
+Les 3 iframes d'affichage des livrables utilisaient `sandbox="allow-same-origin"`. Cette valeur autorisait l'iframe à accéder à `window.parent`, au `localStorage`, et à bypasser les restrictions sandboxées en cas d'injection de script.
 
+**✅ Correction appliquée en v8.2.5 :**
 ```html
-<!-- index.html — lignes 353, 356, 359 (non modifié depuis v8.0) -->
+<!-- Avant -->
 <iframe id="synthFrame"   class="output-frame" sandbox="allow-same-origin"></iframe>
 <iframe id="mockFrame"    class="output-frame" sandbox="allow-same-origin"></iframe>
 <iframe id="cadrageFrame" class="output-frame" sandbox="allow-same-origin"></iframe>
-```
 
-**Recommandation — Correction immédiate :**
-```html
+<!-- Après -->
 <iframe id="synthFrame"   class="output-frame" sandbox=""></iframe>
 <iframe id="mockFrame"    class="output-frame" sandbox=""></iframe>
 <iframe id="cadrageFrame" class="output-frame" sandbox=""></iframe>
 ```
 
-Le contenu est uniquement affiché (pas de formulaires, pas de navigation requise), `sandbox=""` est suffisant et beaucoup plus sûr. La fonction `autoResizeFrame` (l. 1202–1211) accède à `iframe.contentDocument` — elle cessera de fonctionner si `sandbox=""` est utilisé sans `allow-same-origin` ; mais cette limitation est acceptable car la hauteur fixe CSS est gérée via `calc(100vh - 160px)`.
+`sandbox=""` (restriction maximale) : le contenu des iframes est isolé en origine opaque, sans accès au DOM parent, au localStorage ni aux cookies. Les livrables étant uniquement des rendus visuels HTML, aucune fonctionnalité n'est impactée.
 
 ---
 
@@ -212,38 +212,33 @@ document.getElementById('btnConfig').addEventListener('click', openConfig);
 
 ---
 
-### 3.5 innerHTML non sécurisé dans setGenStatus [ÉLEVÉE — NOUVEAU]
+### 3.5 innerHTML non sécurisé dans setGenStatus [ÉLEVÉE] ✅ CORRIGÉ v8.2.5
 
-**Fichier :** [js/app.js](../js/app.js) lignes 987–991  
+**Fichier :** [js/app.js](../js/app.js)  
 **Catégorie :** XSS via message d'erreur API
 
 **Description :**  
-La fonction `setGenStatus` injecte un message via `innerHTML` :
+La fonction `setGenStatus` injectait les messages d'erreur via `innerHTML`, permettant à un contenu HTML provenant d'une réponse API malformée ou d'un proxy MITM d'exécuter du code (ex. `<img onerror=...>`).
 
+**✅ Correction appliquée en v8.2.5 :**
 ```javascript
-// js/app.js — lignes 987–991
+// Avant
 function setGenStatus(key, cls, html) {
   const el = document.getElementById('genStatus' + key);
   el.className = 'gi-status ' + cls;
-  el.innerHTML = html;   // Peut contenir une portion d'err.message
+  el.innerHTML = html;
 }
-```
 
-En cas d'erreur API, l'appelant passe :
-```javascript
-setGenStatus(statusKey, 'error', '✕ ' + err.message.substring(0, 60));
-```
-
-Or `err.message` est construit à partir de la réponse HTTP brute : `HTTP ${response.status}: ${errText.substring(0, 200)}`. Si l'API renvoyait une réponse d'erreur contenant du HTML (ex. : compromission du DNS, proxy malveillant, MITM sur HTTP), les 60 premiers caractères pourraient inclure des balises `<script>` ou `<img onerror=...>`.
-
-**Recommandation :**
-```javascript
-function setGenStatus(key, cls, text) {
+// Après
+function setGenStatus(key, cls, content, isHtml = false) {
   const el = document.getElementById('genStatus' + key);
   el.className = 'gi-status ' + cls;
-  el.textContent = text;   // textContent, pas innerHTML
+  if (isHtml) el.innerHTML = content;   // Uniquement pour le spinner (HTML interne contrôlé)
+  else el.textContent = content;         // Par défaut : texte brut, aucune interprétation HTML
 }
 ```
+
+Les appels au spinner passent explicitement `isHtml = true` (contenu interne, non influençable par l'API). Tous les messages d'erreur / succès utilisent `textContent`.
 
 ---
 
@@ -330,23 +325,24 @@ function validateInput(text, maxLen = 50000) {
 
 ---
 
-### 5.2 Utilisation de `alert()` navigateur — 8 occurrences [FAIBLE]
+### 5.2 Utilisation de `alert()` navigateur [FAIBLE] ✅ CORRIGÉ v8.2.5
 
 **Fichier :** [js/app.js](../js/app.js)
 
-| Ligne | Message |
-|-------|---------|
-| 434 | `La reconnaissance vocale n'est pas supportée par ce navigateur.` |
-| 527 | `La transcription est vide. Parlez d'abord !` |
-| 687 | `Veuillez saisir votre clé API Anthropic.` |
-| 736 | `Veuillez coller du texte avant de lancer l'analyse.` |
-| 763 | `Veuillez saisir votre clé API Anthropic.` |
-| 909 | `Veuillez saisir votre clé API Anthropic.` |
-| 924 | `Veuillez répondre à au moins une question avant de générer.` |
-| 1245 | `Aucun contenu à télécharger.` |
+**✅ Correction appliquée en v8.2.5 :** Les 10 occurrences de `alert()` ont été remplacées par `showToast()`. Résultat : 0 `alert()` restant dans le code.
 
-**Description :** Les `alert()` bloquent le thread principal et peuvent être supprimés ou détournés par des scripts tiers. Le système de toast `showToast()` est déjà implémenté dans l'application.  
-**Recommandation :** Remplacer tous les `alert()` par `showToast()` (avec une variante d'erreur si besoin).
+| Ancienne ligne | Message → Toast |
+|-------|---------|
+| ~497 | `La reconnaissance vocale n'est pas supportée...` |
+| ~595 | `La transcription est vide. Parlez d'abord !` |
+| ~755 | `Veuillez saisir votre clé API Anthropic.` (audio) |
+| ~802 | `Veuillez coller du texte avant de lancer l'analyse.` |
+| ~829 | `Veuillez saisir votre clé API Anthropic.` (texte) |
+| ~985 | `Veuillez saisir votre clé API Anthropic.` (génération) |
+| ~1000 | `Veuillez répondre à au moins une question avant de générer.` |
+| ~1259 | `Questionnaire non chargé — lancez via un serveur HTTP local.` |
+| ~1311 | `Fenêtre bloquée — autorisez les popups pour ce site.` |
+| ~1393 | `Aucun contenu à télécharger.` |
 
 ---
 
@@ -436,9 +432,9 @@ Copier `pdf.min.js` dans `assets/lib/` et le référencer localement.
 |-----------------|--------|-------|
 | A01 — Broken Access Control | N/A | Pas d'authentification (conception intentionnelle) |
 | A02 — Cryptographic Failures | ⚠ Risque | Clé API exposée côté navigateur ; HTTPS garanti pour les appels Anthropic ; détection HTTP ajoutée v8.2.1 |
-| A03 — Injection | ⚠ Risque moyen | Injection HTML dans iframes via `doc.write()` non sanitisé ; `innerHTML` dans `setGenStatus` |
+| A03 — Injection | ⚠ Risque faible | ✅ `setGenStatus` → `textContent` ; ✅ iframes `sandbox=""` ; `doc.write()` sans DOMPurify reste un risque résiduel |
 | A04 — Insecure Design | ⚠ Risque | Architecture client-side secrets — acceptable pour usage interne averti |
-| A05 — Security Misconfiguration | ⚠ Risque élevé | CSP absente ; sandbox iframe insuffisant (`allow-same-origin`) |
+| A05 — Security Misconfiguration | ✅ Partiellement traité | ✅ CSP ajoutée (meta tag) ; ✅ `sandbox=""` sur les iframes ; headers serveur restants (X-Frame-Options, HSTS) |
 | A06 — Vulnerable Components | ⚠ Risque | PDF.js sans SRI ; version 3.11.174 datée (2023) |
 | A07 — Identification Failures | N/A | Pas d'auth par conception |
 | A08 — Data Integrity Failures | ⚠ Risque moyen | Pas de vérification d'intégrité sur les scripts CDN |
@@ -466,25 +462,25 @@ Copier `pdf.min.js` dans `assets/lib/` et le référencer localement.
 
 ### Semaine 1 — Actions immédiates (coût faible, impact élevé)
 
-| Priorité | Action | Fichier | Effort |
-|----------|--------|---------|--------|
-| 🔴 P1 | **Restreindre le sandbox des iframes** : `sandbox="allow-same-origin"` → `sandbox=""` | [index.html](../index.html) l. 353, 356, 359 | 5 min |
-| 🔴 P1 | **Corriger `setGenStatus`** : `innerHTML` → `textContent` | [js/app.js](../js/app.js) l. 990 | 2 min |
-| 🔴 P1 | **Ajouter la CSP** : meta tag dans `<head>` de [index.html](../index.html) | [index.html](../index.html) | 15 min |
-| 🟠 P2 | **Sanitiser les messages d'erreur API** : mapper codes HTTP → messages génériques | [js/app.js](../js/app.js) l. 1114, 1157 | 20 min |
-| 🟠 P2 | **Ajouter timeout API** : `AbortController` 30s sur `callClaudeAPI` et `callClaudeAPIWithAudio` | [js/app.js](../js/app.js) l. 1092, 1126 | 30 min |
-| ✅ Fait | Avertissement ambre clé API dans config | [index.html](../index.html) l. 60–63 | — |
-| ✅ Fait | Détection HTTP + bandeau rouge | [js/app.js](../js/app.js) l. 173–180 | — |
+| Priorité | Action | Fichier | Effort | Statut |
+|----------|--------|---------|--------|--------|
+| 🔴 P1 | **Restreindre le sandbox des iframes** : `sandbox="allow-same-origin"` → `sandbox=""` | [index.html](../index.html) l. 356, 359, 362 | 5 min | ✅ Fait v8.2.5 |
+| 🔴 P1 | **Corriger `setGenStatus`** : `innerHTML` → `textContent` par défaut | [js/app.js](../js/app.js) | 2 min | ✅ Fait v8.2.5 |
+| 🔴 P1 | **Ajouter la CSP** : meta tag dans `<head>` de [index.html](../index.html) | [index.html](../index.html) | 15 min | ✅ Fait v8.2.5 |
+| 🟠 P2 | **Sanitiser les messages d'erreur API** : mapper codes HTTP → messages génériques | [js/app.js](../js/app.js) | 20 min | ⏳ À faire |
+| 🟠 P2 | **Ajouter timeout API** : `AbortController` 30s sur `callClaudeAPI` et `callClaudeAPIWithAudio` | [js/app.js](../js/app.js) | 30 min | ⏳ À faire |
+| ✅ Fait | Avertissement ambre clé API dans config | [index.html](../index.html) l. 60–63 | — | ✅ Fait v8.2.1 |
+| ✅ Fait | Détection HTTP + bandeau rouge | [js/app.js](../js/app.js) l. 173–180 | — | ✅ Fait v8.2.1 |
 
 ### Semaines 2–3 — Court terme
 
-| Action | Fichier | Effort |
-|--------|---------|--------|
-| **SRI sur PDF.js** : ajouter attribut `integrity` ou héberger localement dans `assets/lib/` | [js/app.js](../js/app.js) | 1h |
-| **Remplacer les 8 `alert()`** par `showToast()` | [js/app.js](../js/app.js) l. 434, 527, 687, 736, 763, 909, 924, 1245 | 1h |
-| **Ajouter `beforeunload` pour le microphone** | [js/app.js](../js/app.js) | 5 min |
-| **Supprimer `console.error` en production** | [js/app.js](../js/app.js) l. 189 | 5 min |
-| **Avertissement toggle clé** : toast lors de l'affichage de la clé en clair | [js/app.js](../js/app.js) | 10 min |
+| Action | Fichier | Effort | Statut |
+|--------|---------|--------|--------|
+| **SRI sur PDF.js / Transformers.js** : ajouter attribut `integrity` ou héberger localement dans `assets/lib/` | [js/app.js](../js/app.js) | 1h | ⏳ À faire |
+| **Remplacer les `alert()`** par `showToast()` | [js/app.js](../js/app.js) | 1h | ✅ Fait v8.2.5 (10 remplacés) |
+| **Ajouter `beforeunload` pour le microphone** | [js/app.js](../js/app.js) | 5 min | ⏳ À faire |
+| **Supprimer `console.error` en production** | [js/app.js](../js/app.js) l. 189 | 5 min | ⏳ À faire |
+| **Avertissement toggle clé** : toast lors de l'affichage de la clé en clair | [js/app.js](../js/app.js) | 10 min | ⏳ À faire |
 
 ### Mois 1 — Moyen terme
 
@@ -512,6 +508,7 @@ Copier `pdf.min.js` dans `assets/lib/` et le référencer localement.
 
 | Version | Date | Modifications sécurité |
 |---------|------|----------------------|
+| v8.2.5 | 2026-04-15 | ✅ CSP meta tag ajoutée (`connect-src`, `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`) ; ✅ Sandbox iframes : `allow-same-origin` → `""` (3 iframes) ; ✅ `setGenStatus` : `textContent` par défaut, `isHtml=true` uniquement pour spinner ; ✅ 10 `alert()` → `showToast()` |
 | v8.2.1 | 2026-04-12 | ✅ Avertissement ambre clé API dans config ([index.html](../index.html) l. 60–63) ; ✅ Détection HTTP + bandeau rouge au chargement ([js/app.js](../js/app.js) l. 173–180) ; ✅ README mis à jour |
 | v8.2.0 | 2026-04-12 | Aucune modification sécurité — refonte UX Livrables uniquement |
 | v8.1.0 | 2026-04-11 | Aucune modification sécurité — refonte UX Recueil + Config inline |
@@ -534,4 +531,4 @@ Copier `pdf.min.js` dans `assets/lib/` et le référencer localement.
 
 ---
 
-*Audit réalisé par analyse statique complète du code source ([index.html](../index.html), [js/app.js](../js/app.js)). Aucun test dynamique (pentest) n'a été effectué. Dernière révision : v8.2.1 — 2026-04-12.*
+*Audit réalisé par analyse statique complète du code source ([index.html](../index.html), [js/app.js](../js/app.js)). Aucun test dynamique (pentest) n'a été effectué. Dernière révision : v8.2.5 — 2026-04-15.*

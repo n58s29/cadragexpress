@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cadrage Express</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.anthropic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -353,13 +354,13 @@
       <div class="step2-right">
         <div class="card del-frame-card">
           <div class="del-pane visible" id="dpSynth">
-            <iframe id="synthFrame" class="output-frame" sandbox="allow-same-origin" title="Synthèse structurée du cadrage"></iframe>
+            <iframe id="synthFrame" class="output-frame" sandbox="" title="Synthèse structurée du cadrage"></iframe>
           </div>
           <div class="del-pane" id="dpMock">
-            <iframe id="mockFrame" class="output-frame" sandbox="allow-same-origin" title="Maquette applicative"></iframe>
+            <iframe id="mockFrame" class="output-frame" sandbox="" title="Maquette applicative"></iframe>
           </div>
           <div class="del-pane" id="dpCadrage">
-            <iframe id="cadrageFrame" class="output-frame" sandbox="allow-same-origin" title="Pré-cadrage technique"></iframe>
+            <iframe id="cadrageFrame" class="output-frame" sandbox="" title="Pré-cadrage technique"></iframe>
           </div>
         </div>
       </div>
