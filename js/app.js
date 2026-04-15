@@ -1220,7 +1220,7 @@ async function callClaudeAPIWithAudio(apiKey, audioBase64, mediaType, textPrompt
           role: 'user',
           content: [
             {
-              type: 'document',
+              type: 'audio',
               source: { type: 'base64', media_type: mediaType, data: audioBase64 }
             },
             { type: 'text', text: textPrompt }
