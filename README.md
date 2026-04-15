@@ -24,6 +24,9 @@ L'outil est conçu pour les équipes FAN / 574, les facilitateurs d'innovation e
 | Texte | PDF / .txt / .md | Extraction et analyse du texte |
 | Texte | Coller du texte | Analyse d'un CR de réunion ou expression de besoin |
 | Texte | Saisie manuelle | Remplissage direct du questionnaire avec un textarea par question, ouverture automatique des blocs |
+| JSON | **UX-Pilot** | Import de l'export JSON UX-Pilot — personas, user stories, wireframes, flows, pain points, requirements injectés dans les livrables et dans le questionnaire |
+
+> **UX-Pilot** : le parser accepte n'importe quelle structure d'export JSON UX (noms de champs flexibles). Les écrans détectés sont transmis à Claude avec une instruction de les reproduire fidèlement dans la maquette. Les données alimentent aussi directement la synthèse et le pré-CDC.
 
 ### Questionnaire structuré
 
@@ -211,7 +214,10 @@ Un audit de sécurité complet est disponible dans [`audit/audit-securite-2026-0
 | Déploiement public ou multi-utilisateurs | Nécessite un proxy backend |
 | Données confidentielles ou classifiées | Déconseillé |
 
-**Mesures en place (v8.2.1) :**
+**Mesures en place (v8.2.6) :**
+- **Content Security Policy** : `connect-src` restreint à `api.anthropic.com` + CDNs, `frame-ancestors 'none'` (anti-clickjacking), `object-src 'none'`
+- **Sandbox iframes** : `sandbox=""` (restriction maximale) sur les 3 iframes livrables — contenu isolé, sans accès au DOM parent
+- **Injection XSS bloquée** : `setGenStatus` utilise `textContent` par défaut — les messages d'erreur API ne peuvent plus contenir de HTML exécutable
 - Bandeau ambre dans la config : rappel visibilité DevTools et risques réseau non sécurisé
 - Détection HTTP automatique : bandeau rouge si l'application est servie hors HTTPS hors localhost
 - Clé API jamais persistée (ni localStorage, ni sessionStorage)
@@ -256,4 +262,4 @@ Le projet est maintenu par l'équipe FAN / 574. Pour toute suggestion ou anomali
 
 ---
 
-*Cadrage Express v8.2.5 — Fabrique de l'Adoption Numérique — e.SNCF Solutions*
+*Cadrage Express v8.3.0 — Fabrique de l'Adoption Numérique — e.SNCF Solutions*

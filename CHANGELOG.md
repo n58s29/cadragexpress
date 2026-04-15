@@ -5,6 +5,34 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.3.0] — 2026-04-15
+
+### Ajouté — Import JSON UX-Pilot : enrichissement maquette, synthèse et CDC
+
+- **Nouveau tile "🧩 UX-Pilot"** (6e méthode de recueil) avec drop zone drag & drop pour fichiers `.json`
+- **Parser flexible `normalizeUxPilotJson`** : normalise n'importe quel format d'export UX en structure interne unifiée — teste des dizaines de noms de champs possibles pour les personas, user stories, wireframes, flows, pain points, requirements, sitemap, constraints, design system
+- Déroule automatiquement les wrappers de premier niveau (`{ "data": {...} }`)
+- **Résumé visuel post-import** : chips colorées affichant le nombre d'éléments détectés dans chaque catégorie (personas, user stories, écrans, flux, insights, exigences, objectifs)
+- **Pré-remplissage du questionnaire** (bouton "Pré-remplir →") : mappe automatiquement les données UX vers 10 questions (1.1 demande, 1.2 livrables, 1.3 formulation, 2.1 déclencheur, 3.1 objectif, 4.1 user stories, 4.2 KPIs, 6.3 personas, 9.4 écart, 10.1 solutions, 11.3 flux)
+- **Injection transparente dans les 3 prompts** : le contexte UX (personas, flows, pain points, exigences) est injecté automatiquement dans `systemCtx` lors de la génération — sans action supplémentaire de l'utilisateur
+- **Maquette enrichie** : si des écrans UX-Pilot sont détectés, Claude reçoit l'instruction de reproduire chaque écran nommé avec ses composants et flux de navigation (PRIORITÉ ABSOLUE dans le prompt)
+- **`clearAllData()`** : effacement des données UX-Pilot inclus dans la réinitialisation globale
+- CSS : grille des tuiles méthodes 5 → 6 colonnes + styles `.uxp-chip`, `.uxp-file-loaded`, `.uxp-chips`, `.uxp-badge`
+
+---
+
+## [8.2.6] — 2026-04-15
+
+### Sécurité — Application des correctifs immédiats (audit v8.2.5)
+
+- **CSP meta tag** ajoutée dans `<head>` de `index.html` : `connect-src` restreint à `api.anthropic.com` + CDNs, `frame-ancestors 'none'` (anti-clickjacking), `object-src 'none'`, `base-uri 'self'`
+- **Sandbox iframes** : `allow-same-origin` → `""` sur les 3 iframes livrables (`synthFrame`, `mockFrame`, `cadrageFrame`) — contenu isolé en origine opaque, sans accès au DOM parent
+- **`setGenStatus`** : `innerHTML` → `textContent` par défaut, `isHtml=true` uniquement pour le spinner interne contrôlé — `err.message` ne peut plus injecter de balises HTML
+- **10 `alert()`** remplacés par `showToast()` — 0 occurrence restante
+- Audit `audit/audit-securite-2026-04-12.md` mis à jour : score 6,0 → 7,0/10, items corrigés marqués ✅
+
+---
+
 ## [8.2.5] — 2026-04-12
 
 ### Ajouté — Modal de bienvenue et avertissement données sensibles
