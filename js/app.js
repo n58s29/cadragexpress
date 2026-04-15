@@ -425,6 +425,7 @@ const METHOD_TILE = { audio:'mtAudio', live:'mtLive', pdf:'mtPdf', paste:'mtPast
 const METHOD_ZONE = { audio:'zoneAudio', live:'zoneLive', pdf:'zonePdf', paste:'zonePaste', manual:'zoneManual' };
 
 function switchMethod(m) {
+  if (m === 'audio') return; // temporairement désactivé
   // Tuiles : activer/désactiver
   Object.entries(METHOD_TILE).forEach(([k, id]) => {
     const el = document.getElementById(id);

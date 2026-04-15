@@ -149,11 +149,11 @@
 
             <!-- 5 tuiles méthodes en une seule rangée -->
             <div class="method-tiles">
-              <button class="method-tile active" id="mtAudio" onclick="switchMethod('audio')" title="Importer un fichier audio">
+              <button class="method-tile" id="mtAudio" disabled title="Fonctionnalité temporairement indisponible">
                 <span class="mt-icon">🎙</span>
                 <span class="mt-label">Fichier audio</span>
               </button>
-              <button class="method-tile" id="mtLive" onclick="switchMethod('live')" title="Dictée en direct (Chrome/Edge)">
+              <button class="method-tile active" id="mtLive" onclick="switchMethod('live')" title="Dictée en direct (Chrome/Edge)">
                 <span class="mt-icon">🎤</span>
                 <span class="mt-label">Dictée live</span>
               </button>
@@ -172,7 +172,7 @@
             </div>
 
             <!-- Audio Zone -->
-            <div id="zoneAudio" class="method-zone">
+            <div id="zoneAudio" class="method-zone" style="display:none;">
               <div id="audioDropZone" class="compact-drop" onclick="document.getElementById('audioPicker').click()">
                 <span class="cd-icon">🎙</span>
                 <div class="cd-text">
@@ -242,7 +242,7 @@
             </div>
 
             <!-- Live Dictation Zone -->
-            <div id="zoneLive" class="method-zone" style="display:none;">
+            <div id="zoneLive" class="method-zone">
               <div class="live-controls">
                 <button class="mic-btn" id="micBtn" onclick="toggleMic()" aria-label="Démarrer la dictée" aria-pressed="false"><span aria-hidden="true">🎤</span></button>
                 <div>
