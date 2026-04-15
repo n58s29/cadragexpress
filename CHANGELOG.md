@@ -5,6 +5,19 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.3.1] — 2026-04-15
+
+### Amélioré — Streaming SSE, avancement en temps réel et timeout sur la génération
+
+- **Streaming SSE activé** (`stream: true`) : `callClaudeAPI` lit le flux token par token via `ReadableStream` + `TextDecoder` — la génération n'attend plus la réponse complète pour démarrer l'affichage
+- **Avancement en temps réel** : chaque livrable affiche `⏳ X tokens… (Xs)` mis à jour toutes les ~400 ms pendant la génération (throttle DOM)
+- **Décompte de tokens réel** : le vrai `output_tokens` (événement `message_delta`) remplace l'estimation à la fin ; pendant le stream l'approximation `longueur / 4` est utilisée
+- **Statut final enrichi** : `✓ Terminé — X tokens · Xs` à la place de `✓ Terminé (N car.)`
+- **Timeout 2 minutes** : `AbortController` + `setTimeout(120 000 ms)` — toute génération bloquée au-delà de 2 min est annulée proprement avec le message `✕ Timeout dépassé (2 min)`
+- **Gestion AbortError** : l'erreur de timeout est traduite en message lisible ; les autres erreurs continuent d'afficher le message brut (60 car. max) + le temps écoulé
+
+---
+
 ## [8.3.0] — 2026-04-15
 
 ### Ajouté — Import JSON UX-Pilot : enrichissement maquette, synthèse et CDC

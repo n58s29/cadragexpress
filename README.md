@@ -67,6 +67,8 @@ Chaque agent enrichit les livrables selon son prisme d'expertise :
 
 Les trois livrables respectent l'identité de marque définie dans la configuration (`design.md`) lorsqu'elle est fournie.
 
+**Génération en streaming** : chaque livrable affiche en temps réel le nombre de tokens générés et le temps écoulé (`⏳ X tokens… (Xs)`). Un timeout de 2 minutes protège contre les blocages réseau.
+
 ---
 
 ## Architecture

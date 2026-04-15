@@ -1356,8 +1356,20 @@ ${JSON.stringify(questionnaire)}`;
 }
 
 async function genDeliverable(apiKey, systemCtx, prompt, key, frameId, statusKey) {
+  const startTime = Date.now();
+  let lastUpdate = 0;
+
   try {
-    const content = await callClaudeAPI(apiKey, prompt);
+    const content = await callClaudeAPI(apiKey, prompt, (approxTokens) => {
+      const now = Date.now();
+      if (now - lastUpdate < 400) return; // throttle DOM updates to every 400ms
+      lastUpdate = now;
+      const secs = Math.round((now - startTime) / 1000);
+      setGenStatus(statusKey, 'pending',
+        `<span class="spinner"></span> ${approxTokens.toLocaleString()} tokens… (${secs}s)`, true);
+    });
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     const html = cleanHtmlOutput(content);
     if (key === 'synth') lastSynthHtml = html;
     else if (key === 'mock') lastMockHtml = html;
@@ -1366,12 +1378,15 @@ async function genDeliverable(apiKey, systemCtx, prompt, key, frameId, statusKey
     if (html.length > 0) {
       writeToFrame(frameId, html);
       autoResizeFrame(frameId);
-      setGenStatus(statusKey, 'done', `✓ Terminé (${html.length.toLocaleString()} car.)`);
+      const approxTokens = Math.round(content.length / 4);
+      setGenStatus(statusKey, 'done', `✓ Terminé — ${approxTokens.toLocaleString()} tokens · ${elapsed}s`);
     } else {
       setGenStatus(statusKey, 'error', '⚠ Contenu vide');
     }
   } catch (err) {
-    setGenStatus(statusKey, 'error', '✕ ' + err.message.substring(0, 60));
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    const msg = err.name === 'AbortError' ? 'Timeout dépassé (2 min)' : err.message.substring(0, 60);
+    setGenStatus(statusKey, 'error', `✕ ${msg} (${elapsed}s)`);
     writeToFrame(frameId, errorPage(err.message));
   }
   onGenPartDone();
@@ -1485,38 +1500,75 @@ Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
 /* ═══════════════════════════════════════
    CLAUDE API
    ═══════════════════════════════════════ */
-async function callClaudeAPI(apiKey, userPrompt) {
+async function callClaudeAPI(apiKey, userPrompt, onProgress = null) {
   const model = document.getElementById('cfgModel').value.trim() || 'claude-sonnet-4-20250514';
   const maxTokens = parseInt(document.getElementById('cfgMaxTokens').value) || 8192;
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: model,
-      max_tokens: maxTokens,
-      messages: [
-        { role: 'user', content: userPrompt }
-      ]
-    })
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errText.substring(0, 200)}`);
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: maxTokens,
+        stream: true,
+        messages: [
+          { role: 'user', content: userPrompt }
+        ]
+      }),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errText.substring(0, 200)}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+    let outputTokens = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // keep incomplete last line
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const payload = line.slice(6).trim();
+        if (payload === '[DONE]') continue;
+
+        try {
+          const evt = JSON.parse(payload);
+          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+            fullText += evt.delta.text;
+            if (onProgress) onProgress(Math.round(fullText.length / 4));
+          } else if (evt.type === 'message_delta' && evt.usage?.output_tokens) {
+            outputTokens = evt.usage.output_tokens;
+          }
+        } catch { /* ignore JSON parse errors on malformed SSE events */ }
+      }
+    }
+
+    if (fullText.length === 0) throw new Error('Réponse vide ou structure inattendue');
+    if (onProgress && outputTokens > 0) onProgress(outputTokens); // final call with real count
+    return fullText;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const data = await response.json();
-
-  if (data.content && data.content.length > 0) {
-    return data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
-  }
-  throw new Error('Réponse vide ou structure inattendue');
 }
 
 let _whisperPipeline = null;
