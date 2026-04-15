@@ -13,6 +13,7 @@ let lastCadrageHtml = '';
 let genDone = 0;
 let answeredQuestions = {};         // { "1.1": "réponse courte", ... }
 let designMdContent = '';           // Contenu du design.md importé
+let uxPilotData = null;             // Données normalisées de l'export UX-Pilot
 const LIVE_CHUNK_SIZE = 400;        // nb de nouveaux chars avant analyse progressive
 let liveLastAnalyzedLen = 0;
 let liveAnalysisRunning = false;
@@ -319,6 +320,8 @@ function clearAllData() {
   // Dictée live
   const liveTranscript = document.getElementById('liveTranscript');
   if (liveTranscript) liveTranscript.value = '';
+  // UX-Pilot
+  if (uxPilotData) clearUxPilot();
   // Livrables générés
   lastSynthHtml = ''; lastMockHtml = ''; lastCadrageHtml = '';
   ['synthFrame','mockFrame','cadrageFrame'].forEach(id => {
@@ -421,8 +424,8 @@ function goStep(n) {
 /* ═══════════════════════════════════════
    SOURCE SWITCH
    ═══════════════════════════════════════ */
-const METHOD_TILE = { audio:'mtAudio', live:'mtLive', pdf:'mtPdf', paste:'mtPaste', manual:'mtManual' };
-const METHOD_ZONE = { audio:'zoneAudio', live:'zoneLive', pdf:'zonePdf', paste:'zonePaste', manual:'zoneManual' };
+const METHOD_TILE = { audio:'mtAudio', live:'mtLive', pdf:'mtPdf', paste:'mtPaste', manual:'mtManual', uxpilot:'mtUxpilot' };
+const METHOD_ZONE = { audio:'zoneAudio', live:'zoneLive', pdf:'zonePdf', paste:'zonePaste', manual:'zoneManual', uxpilot:'zoneUxpilot' };
 
 function switchMethod(m) {
   if (m === 'audio') return; // temporairement désactivé
@@ -605,6 +608,7 @@ async function runAnalysisFromLive() {
 function initDragDrop() {
   setupDropZone('pdfDropZone', f => processFile(f));
   setupDropZone('audioDropZone', f => processAudioFile(f));
+  setupDropZone('uxpilotDropZone', f => processUxPilotFile(f));
 }
 
 function setupDropZone(id, handler) {
@@ -689,6 +693,316 @@ function clearFile() {
   document.getElementById('analyzeBtn').disabled = true;
   setStatus('fStatus', '');
   document.getElementById('filePicker').value = '';
+}
+
+/* ═══════════════════════════════════════
+   UX-PILOT JSON IMPORT
+   ═══════════════════════════════════════ */
+
+function handleUxPilotSelect(input) {
+  if (input.files && input.files.length > 0) processUxPilotFile(input.files[0]);
+}
+
+async function processUxPilotFile(file) {
+  if (!file.name.toLowerCase().endsWith('.json')) {
+    setStatus('uxStatus', '✕ Seuls les fichiers .json sont acceptés.');
+    return;
+  }
+  setStatus('uxStatus', '🔄 Lecture du fichier...');
+  try {
+    const text = await file.text();
+    const raw = JSON.parse(text);
+    uxPilotData = normalizeUxPilotJson(raw);
+    showUxPilotSummary(file.name);
+  } catch (e) {
+    setStatus('uxStatus', '✕ JSON invalide : ' + e.message.substring(0, 80));
+    uxPilotData = null;
+  }
+}
+
+// Normalise n'importe quel export JSON UX en structure connue
+function normalizeUxPilotJson(raw) {
+  function pick(obj, ...keys) {
+    for (const k of keys) {
+      if (obj && obj[k] != null && obj[k] !== '') return obj[k];
+    }
+    return null;
+  }
+  function toArr(v) {
+    if (!v) return [];
+    if (Array.isArray(v)) return v;
+    if (typeof v === 'object') return Object.values(v);
+    return [];
+  }
+  // Tente de déplier un wrapper de premier niveau (ex: { "data": {...} })
+  const topKeys = Object.keys(raw);
+  const unwrapped = (topKeys.length === 1 && typeof raw[topKeys[0]] === 'object' && !Array.isArray(raw[topKeys[0]]))
+    ? raw[topKeys[0]] : raw;
+
+  const proj = pick(unwrapped, 'project', 'meta', 'metadata', 'info', 'project_info') || {};
+
+  return {
+    projectName: pick(unwrapped, 'name', 'title', 'project_name', 'projectName')
+               || pick(proj, 'name', 'title', 'project_name') || '',
+    projectDescription: pick(unwrapped, 'description', 'summary', 'overview', 'brief', 'goal')
+                      || pick(proj, 'description', 'summary', 'overview', 'brief') || '',
+    objectives: toArr(pick(unwrapped, 'objectives', 'goals', 'business_goals', 'project_goals', 'kpis', 'success_metrics')
+              || pick(proj, 'objectives', 'goals', 'business_goals')),
+    personas: toArr(pick(unwrapped, 'personas', 'users', 'user_personas', 'target_users', 'audience',
+                         'user_types', 'stakeholders', 'archetypes')),
+    userStories: toArr(pick(unwrapped, 'user_stories', 'userStories', 'stories', 'features',
+                            'epics', 'feature_list', 'requirements_list', 'tasks')),
+    userFlows: toArr(pick(unwrapped, 'user_flows', 'userFlows', 'flows', 'journeys',
+                          'user_journeys', 'task_flows', 'workflows', 'scenarios')),
+    screens: toArr(pick(unwrapped, 'screens', 'wireframes', 'pages', 'views', 'mockups',
+                        'frames', 'artboards', 'designs', 'ui_screens', 'layouts')),
+    painPoints: toArr(pick(unwrapped, 'pain_points', 'painPoints', 'problems', 'issues',
+                           'challenges', 'insights', 'research_insights', 'findings',
+                           'observations', 'frustrations', 'barriers')),
+    requirements: toArr(pick(unwrapped, 'requirements', 'functional_requirements', 'specs',
+                             'specifications', 'acceptance_criteria', 'nfr', 'must_have')),
+    designSystem: pick(unwrapped, 'design_system', 'designSystem', 'design', 'styles', 'tokens', 'theme') || null,
+    sitemap: toArr(pick(unwrapped, 'sitemap', 'navigation', 'structure', 'information_architecture', 'ia', 'site_map')),
+    constraints: toArr(pick(unwrapped, 'constraints', 'limitations', 'technical_constraints',
+                            'non_functional_requirements', 'nfr', 'technical_requirements')),
+  };
+}
+
+// Extrait le texte d'une valeur (string, objet, etc.)
+function extractText(obj, ...preferredKeys) {
+  if (!obj) return '';
+  if (typeof obj === 'string') return obj.trim();
+  if (typeof obj === 'number') return String(obj);
+  const allKeys = preferredKeys.length > 0
+    ? [...preferredKeys, 'title', 'name', 'label', 'text', 'description', 'value', 'content', 'summary', 'body', 'story']
+    : ['title', 'name', 'label', 'text', 'description', 'value', 'content', 'summary', 'body', 'story'];
+  for (const k of allKeys) {
+    if (obj[k] && typeof obj[k] === 'string' && obj[k].trim()) return obj[k].trim();
+  }
+  const firstStr = Object.values(obj).find(v => typeof v === 'string' && v.trim());
+  return firstStr ? firstStr.trim() : '';
+}
+
+// Formate une user story sous forme lisible
+function formatUserStory(s) {
+  if (typeof s === 'string') return s.trim();
+  const who = s.as_a || s.as_an || s.role || s.user || s.actor || '';
+  const what = s.i_want || s.want || s.action || s.need || s.feature || '';
+  const why  = s.so_that || s.benefit || s.goal || s.reason || '';
+  if (who && what) {
+    return `En tant que ${who}, je veux ${what}${why ? ' afin de ' + why : ''}`;
+  }
+  return extractText(s, 'title', 'name', 'description', 'story', 'content', 'requirement');
+}
+
+function showUxPilotSummary(filename) {
+  document.getElementById('uxpilotDropZone').style.display = 'none';
+  document.getElementById('uxpilotHint').style.display = 'none';
+  document.getElementById('uxpilotLoaded').style.display = 'block';
+  document.getElementById('uxpilotFileName').textContent = filename;
+
+  const d = uxPilotData;
+  const chips = [
+    d.projectName                 ? { label: d.projectName.substring(0, 30),     cls: '' }  : null,
+    d.personas.length > 0         ? { label: d.personas.length + ' persona' + (d.personas.length > 1 ? 's' : ''),         cls: 'ok' } : null,
+    d.userStories.length > 0      ? { label: d.userStories.length + ' user stor' + (d.userStories.length > 1 ? 'ies' : 'y'), cls: 'ok' } : null,
+    d.screens.length > 0          ? { label: d.screens.length + ' écran' + (d.screens.length > 1 ? 's' : ''),            cls: 'ok' } : null,
+    d.userFlows.length > 0        ? { label: d.userFlows.length + ' flux',                                                cls: 'ok' } : null,
+    d.painPoints.length > 0       ? { label: d.painPoints.length + ' insight' + (d.painPoints.length > 1 ? 's' : ''),    cls: 'ok' } : null,
+    d.requirements.length > 0     ? { label: d.requirements.length + ' exigence' + (d.requirements.length > 1 ? 's' : ''), cls: 'ok' } : null,
+    d.objectives.length > 0       ? { label: d.objectives.length + ' objectif' + (d.objectives.length > 1 ? 's' : ''),   cls: 'ok' } : null,
+  ].filter(Boolean);
+
+  document.getElementById('uxpilotSummary').innerHTML = chips.map(c =>
+    `<span class="uxp-chip ${c.cls}">${esc(c.label)}</span>`
+  ).join('');
+  setStatus('uxStatus', '');
+}
+
+function clearUxPilot() {
+  uxPilotData = null;
+  document.getElementById('uxpilotDropZone').style.display = 'flex';
+  document.getElementById('uxpilotHint').style.display = 'block';
+  document.getElementById('uxpilotLoaded').style.display = 'none';
+  document.getElementById('uxpilotSummary').innerHTML = '';
+  setStatus('uxStatus', '');
+  document.getElementById('uxpilotPicker').value = '';
+}
+
+function applyUxPilotToQuestionnaire() {
+  if (!uxPilotData) return;
+  const d = uxPilotData;
+  const answers = {};
+
+  // 1.1 Demande initiale
+  const proj = [d.projectName, d.projectDescription].filter(Boolean).join(' — ');
+  if (proj) answers['1.1'] = proj.substring(0, 100);
+
+  // 1.2 Livrable attendu — noms des écrans
+  const screenNames = d.screens.map(s => extractText(s, 'name', 'title', 'screen_name', 'label', 'page')).filter(Boolean);
+  if (screenNames.length > 0) {
+    answers['1.2'] = ('Application avec : ' + screenNames.slice(0, 4).join(', ')).substring(0, 100);
+  }
+
+  // 1.3 Formulation du problème
+  if (d.projectName) answers['1.3'] = d.projectName.substring(0, 100);
+
+  // 2.1 Déclencheur — premier pain point
+  const firstPain = d.painPoints.length > 0
+    ? extractText(d.painPoints[0], 'description', 'insight', 'finding', 'problem', 'observation', 'challenge') : '';
+  if (firstPain) answers['2.1'] = firstPain.substring(0, 100);
+
+  // 3.1 & 4.2 Objectifs / critères de succès
+  const objectives = d.objectives.map(o => extractText(o, 'title', 'description', 'goal', 'kpi')).filter(Boolean);
+  if (objectives.length > 0) {
+    answers['3.1'] = objectives[0].substring(0, 100);
+    answers['4.2'] = objectives.slice(0, 3).join(' · ').substring(0, 100);
+  }
+
+  // 4.1 Livrables — user stories
+  if (d.userStories.length > 0) {
+    const stories = d.userStories.slice(0, 3).map(s => formatUserStory(s)).filter(Boolean);
+    if (stories.length > 0) answers['4.1'] = stories[0].substring(0, 100);
+  }
+
+  // 6.3 Utilisateurs — personas
+  const personaNames = d.personas.map(p => extractText(p, 'name', 'role', 'title', 'type', 'persona_name')).filter(Boolean);
+  if (personaNames.length > 0) answers['6.3'] = personaNames.join(', ').substring(0, 100);
+
+  // 8.4 Contraintes techniques
+  if (d.constraints.length > 0) {
+    const c = extractText(d.constraints[0], 'description', 'constraint', 'limitation');
+    if (c) answers['8.4'] = c.substring(0, 100);
+  }
+
+  // 9.4 Écart actuel / souhaité
+  if (d.painPoints.length > 1) {
+    const pains = d.painPoints.slice(0, 2).map(p => extractText(p, 'description', 'insight', 'problem')).filter(Boolean);
+    if (pains.length > 0) answers['9.4'] = pains.join(' / ').substring(0, 100);
+  }
+
+  // 10.1 Pistes solutions — screens + requirements
+  const reqTexts = d.requirements.slice(0, 3).map(r => extractText(r, 'description', 'requirement', 'title')).filter(Boolean);
+  const solutionParts = [...(screenNames.length > 0 ? ['Écrans : ' + screenNames.slice(0, 3).join(', ')] : []), ...reqTexts];
+  if (solutionParts.length > 0) answers['10.1'] = solutionParts.join(' · ').substring(0, 100);
+
+  // 11.3 Phasage — flows suggest iterative
+  if (d.userFlows.length > 0) {
+    const flowNames = d.userFlows.map(f => extractText(f, 'name', 'title')).filter(Boolean).slice(0, 3);
+    if (flowNames.length > 0) answers['11.3'] = ('Flux : ' + flowNames.join(', ')).substring(0, 100);
+  }
+
+  const n = Object.keys(answers).length;
+  applyAnswers(answers);
+  showToast(`✓ ${n} question${n > 1 ? 's' : ''} pré-remplie${n > 1 ? 's' : ''} depuis UX-Pilot`);
+  goStep(1);
+}
+
+// Construit le contexte UX à injecter dans le system prompt
+function buildUxPilotContext() {
+  if (!uxPilotData) return '';
+  const d = uxPilotData;
+  const lines = [];
+
+  if (d.projectName)        lines.push('PROJET UX : ' + d.projectName);
+  if (d.projectDescription) lines.push('DESCRIPTION : ' + d.projectDescription);
+
+  if (d.objectives.length > 0) {
+    lines.push('OBJECTIFS :');
+    d.objectives.forEach(o => { const t = extractText(o, 'title', 'description', 'goal'); if (t) lines.push('  - ' + t); });
+  }
+  if (d.personas.length > 0) {
+    lines.push('PERSONAS UTILISATEURS :');
+    d.personas.forEach(p => {
+      const name   = extractText(p, 'name', 'role', 'title', 'type', 'persona_name');
+      const goals  = extractText(p, 'goals', 'needs', 'objective', 'description', 'motivation', 'bio');
+      const pains  = extractText(p, 'pain_points', 'frustrations', 'challenges', 'barriers');
+      let line = '  - ' + name;
+      if (goals) line += ' — Objectifs : ' + goals.substring(0, 80);
+      if (pains) line += ' — Douleurs : ' + pains.substring(0, 80);
+      lines.push(line);
+    });
+  }
+  if (d.userStories.length > 0) {
+    lines.push('USER STORIES / FONCTIONNALITÉS :');
+    d.userStories.slice(0, 25).forEach(s => { const t = formatUserStory(s); if (t) lines.push('  - ' + t); });
+    if (d.userStories.length > 25) lines.push('  ... et ' + (d.userStories.length - 25) + ' autres');
+  }
+  if (d.screens.length > 0) {
+    lines.push('ÉCRANS / WIREFRAMES :');
+    d.screens.forEach(s => {
+      const name = extractText(s, 'name', 'title', 'screen_name', 'label', 'page');
+      const desc = extractText(s, 'description', 'purpose', 'notes', 'content', 'summary');
+      const comps = Array.isArray(s.components) ? s.components.map(c => extractText(c, 'type', 'name')).filter(Boolean) : [];
+      let line = '  - ' + name;
+      if (desc) line += ' : ' + desc.substring(0, 80);
+      if (comps.length > 0) line += ' [' + comps.slice(0, 4).join(', ') + ']';
+      lines.push(line);
+    });
+  }
+  if (d.userFlows.length > 0) {
+    lines.push('FLUX UTILISATEURS :');
+    d.userFlows.forEach(f => {
+      const name  = extractText(f, 'name', 'title', 'flow_name', 'label');
+      const steps = Array.isArray(f.steps) ? f.steps.map(s => extractText(s, 'name', 'title', 'action', 'step')).filter(Boolean) : [];
+      lines.push('  - ' + name + (steps.length > 0 ? ' : ' + steps.join(' → ') : ''));
+    });
+  }
+  if (d.painPoints.length > 0) {
+    lines.push('INSIGHTS UX / POINTS DE DOULEUR :');
+    d.painPoints.slice(0, 10).forEach(p => {
+      const t = extractText(p, 'description', 'insight', 'finding', 'problem', 'observation', 'challenge');
+      if (t) lines.push('  - ' + t);
+    });
+  }
+  if (d.requirements.length > 0) {
+    lines.push('EXIGENCES FONCTIONNELLES :');
+    d.requirements.slice(0, 20).forEach(r => {
+      const t = extractText(r, 'description', 'requirement', 'title', 'name', 'spec');
+      if (t) lines.push('  - ' + t);
+    });
+  }
+  if (d.constraints.length > 0) {
+    lines.push('CONTRAINTES :');
+    d.constraints.forEach(c => { const t = extractText(c, 'description', 'constraint'); if (t) lines.push('  - ' + t); });
+  }
+  if (d.sitemap.length > 0) {
+    lines.push('ARCHITECTURE DE L\'INFORMATION :');
+    d.sitemap.slice(0, 10).forEach(s => { const t = extractText(s, 'name', 'title', 'section'); if (t) lines.push('  - ' + t); });
+  }
+  return lines.join('\n');
+}
+
+// Section UX dédiée au prompt Maquette (écrans + flows à reproduire)
+function buildUxMockSection() {
+  if (!uxPilotData) return '';
+  const d = uxPilotData;
+  const parts = [];
+  if (d.screens.length > 0) {
+    parts.push('\nÉCRANS À REPRÉSENTER DANS LA MAQUETTE (source UX-Pilot — à reproduire fidèlement) :');
+    d.screens.forEach(s => {
+      const name  = extractText(s, 'name', 'title', 'screen_name', 'label', 'page');
+      const desc  = extractText(s, 'description', 'purpose', 'notes', 'content', 'summary');
+      const comps = Array.isArray(s.components) ? s.components.map(c => extractText(c, 'type', 'name')).filter(Boolean) : [];
+      let line = '  - ' + name;
+      if (desc) line += ' : ' + desc.substring(0, 100);
+      if (comps.length > 0) line += ' [composants : ' + comps.slice(0, 5).join(', ') + ']';
+      parts.push(line);
+    });
+  }
+  if (d.userFlows.length > 0) {
+    parts.push('\nFLUX DE NAVIGATION À ILLUSTRER :');
+    d.userFlows.slice(0, 5).forEach(f => {
+      const name  = extractText(f, 'name', 'title');
+      const steps = Array.isArray(f.steps) ? f.steps.map(s => extractText(s, 'name', 'title', 'action', 'step')).filter(Boolean) : [];
+      parts.push('  - ' + name + (steps.length > 0 ? ' : ' + steps.join(' → ') : ''));
+    });
+  }
+  if (d.personas.length > 0) {
+    parts.push('\nPERSONAS (à mentionner dans la maquette comme utilisateurs type) :');
+    d.personas.forEach(p => parts.push('  - ' + extractText(p, 'name', 'role', 'title')));
+  }
+  return parts.join('\n');
 }
 
 /* ═══════════════════════════════════════
@@ -1023,11 +1337,14 @@ async function generateCadrage() {
   const designCtx = designMdContent.trim();
   const brandName = document.getElementById('cfgBrandName').value.trim();
 
+  const uxCtx = buildUxPilotContext();
+
   const systemCtx = `Tu es un collectif d'experts en cadrage de projets d'innovation (${agentList}). Tu produis des livrables de cadrage ultra-structurés.
 
 EXPERTS MOBILISÉS :
 ${JSON.stringify(activeAgents, null, 2)}
 ${extraCtx ? '\nContexte additionnel : ' + extraCtx : ''}
+${uxCtx ? '\nDONNÉES UX-PILOT (analyse UX en amont du développement — source de vérité pour la maquette et les exigences) :\n' + uxCtx : ''}
 
 QUESTIONNAIRE :
 ${JSON.stringify(questionnaire)}`;
@@ -1107,16 +1424,18 @@ function buildMockPrompt(ctx, designCtx, brandName) {
   const designSection = designCtx
     ? `\nIDENTITÉ DE MARQUE (respecter impérativement pour tous les choix visuels — couleurs, typo, ton, composants) :\n${designCtx}\n`
     : `\n- Palette : fond #F0F1F4, surfaces blanches, titres bleu #0088CE, accents #DC582A, texte #3C3732\n- Police system sans-serif (Segoe UI, Arial)\n`;
+  const uxSection = buildUxMockSection();
+  const hasUxScreens = uxPilotData && uxPilotData.screens.length > 0;
   return ctx + `\n\nLIVRABLE 2 - MAQUETTE / PROTOTYPE VISUEL DE L'APPLICATION
-À partir du besoin métier décrit dans le questionnaire, imagine et génère une MAQUETTE HTML de ce à quoi l'application ou la webapp demandée POURRAIT RESSEMBLER une fois réalisée.
+À partir du besoin métier décrit dans le questionnaire${uxSection ? ' et des données UX-Pilot fournies' : ''}, génère une MAQUETTE HTML de ce à quoi l'application ou la webapp demandée POURRAIT RESSEMBLER une fois réalisée.
 
 CE QUE TU DOIS FAIRE :
 - Créer un PROTOTYPE VISUEL (mockup) de l'interface utilisateur de la solution envisagée
 - C'est une maquette statique : elle n'a PAS besoin d'être fonctionnelle, elle doit MONTRER à quoi ça ressemblerait
 - Inventer des données fictives réalistes pour remplir les écrans (noms, chiffres, statuts, tableaux de bord...)
-- Imaginer les écrans principaux : dashboard, formulaires, listes, tableaux, indicateurs, navigation
+${hasUxScreens ? '- PRIORITÉ ABSOLUE : représenter chaque écran identifié dans la section UX-Pilot ci-dessous' : '- Imaginer les écrans principaux : dashboard, formulaires, listes, tableaux, indicateurs, navigation'}
 - Donner une impression crédible et professionnelle de l'outil fini
-
+${uxSection}
 RÈGLES TECHNIQUES :
 - Page HTML complète et autonome (doctype, head avec <style> intégré, body)
 - Design sobre, moderne, professionnel - comme une vraie webapp d'entreprise

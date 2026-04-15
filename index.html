@@ -170,6 +170,10 @@
                 <span class="mt-icon">✏</span>
                 <span class="mt-label">Manuel</span>
               </button>
+              <button class="method-tile" id="mtUxpilot" onclick="switchMethod('uxpilot')" title="Importer un export JSON UX-Pilot">
+                <span class="mt-icon">🧩</span>
+                <span class="mt-label">UX-Pilot</span>
+              </button>
             </div>
 
             <!-- Audio Zone -->
@@ -262,6 +266,43 @@
             <!-- Manual Zone -->
             <div id="zoneManual" class="method-zone" style="display:none;">
               <div class="note-box">Remplissez directement le questionnaire ci-contre.</div>
+            </div>
+
+            <!-- UX-Pilot Zone -->
+            <div id="zoneUxpilot" class="method-zone" style="display:none;">
+              <div id="uxpilotDropZone" class="compact-drop" onclick="document.getElementById('uxpilotPicker').click()">
+                <span class="cd-icon">🧩</span>
+                <div class="cd-text">
+                  <div class="cd-title">Déposez votre export JSON UX-Pilot ici</div>
+                  <div class="cd-sub">ou <u>parcourir</u> — fichier .json</div>
+                </div>
+              </div>
+              <input id="uxpilotPicker" type="file" style="display:none" aria-label="Importer un export UX-Pilot JSON" accept=".json" onchange="handleUxPilotSelect(this)" />
+
+              <div id="uxpilotLoaded" style="display:none;">
+                <div class="uxp-file-loaded">
+                  <span style="font-size:22px;flex-shrink:0;">🧩</span>
+                  <div style="flex:1;min-width:0;">
+                    <div class="fl-name" id="uxpilotFileName">export.json</div>
+                    <div class="fl-meta">Données UX importées</div>
+                  </div>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn sm" onclick="document.getElementById('uxpilotPicker').click()">🔄</button>
+                    <button class="btn sm danger" onclick="clearUxPilot()">✕</button>
+                  </div>
+                </div>
+                <div class="uxp-chips" id="uxpilotSummary"></div>
+                <button class="btn-analyse" style="margin-top:10px;" onclick="applyUxPilotToQuestionnaire()">
+                  Pré-remplir le questionnaire →
+                </button>
+              </div>
+
+              <div class="status-msg" id="uxStatus" aria-live="polite"></div>
+
+              <div class="note-box" id="uxpilotHint">
+                Importez l'export JSON de votre projet <strong>UX-Pilot</strong>.<br>
+                Les personas, user stories, wireframes et flux seront injectés dans les livrables et pré-rempliront le questionnaire.
+              </div>
             </div>
 
           </div>

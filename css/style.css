@@ -971,7 +971,7 @@ select.finput option {
 /* ═══════ METHOD TILES ═══════ */
 .method-tiles {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 6px;
   margin-bottom: 16px;
 }
@@ -1015,6 +1015,50 @@ select.finput option {
 
 .method-tile.active .mt-label {
   color: rgba(255, 255, 255, 0.9);
+}
+
+/* ═══════ UX-PILOT IMPORT ═══════ */
+.uxp-file-loaded {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--succes-fond);
+  border-radius: 0.25rem;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+}
+.uxp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 4px;
+}
+.uxp-chip {
+  background: rgba(0, 136, 204, 0.1);
+  border: 1px solid rgba(0, 136, 204, 0.25);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 11px;
+  color: var(--cerulean);
+  font-weight: 500;
+}
+.uxp-chip.ok {
+  background: rgba(0, 179, 136, 0.1);
+  border-color: rgba(0, 179, 136, 0.35);
+  color: var(--menthe);
+}
+.uxp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 179, 136, 0.1);
+  border: 1px solid rgba(0, 179, 136, 0.3);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--menthe);
+  font-weight: 500;
+  margin-left: 8px;
 }
 
 /* ═══════ COMPACT DROP ZONE ═══════ */
@@ -1162,7 +1206,7 @@ select.finput option {
     min-height: 400px;
   }
   .method-tiles {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
   }
 }
 
