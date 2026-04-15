@@ -761,24 +761,22 @@ async function runAnalysisFromAudio() {
   const prog = document.getElementById('aProg');
   const fill = document.getElementById('aProgFill');
   prog.classList.add('active');
-  fill.style.width = '30%';
-  setStatus('aStatus', '🎙 Transcription et analyse par Claude...');
-
-  const lines = [];
-  if (questionDefs.blocs) {
-    questionDefs.blocs.forEach(b => b.questions.forEach(q => lines.push(`${q.id} | ${q.texte}`)));
-  }
-  const prompt = `Analyse cet enregistrement audio d'une réunion ou entretien métier.
-Transcris l'audio et identifie quelles questions de cadrage y sont répondues.
-
-QUESTIONS :
-${lines.join('\n')}
-
-Réponds UNIQUEMENT avec un JSON {"id": "réponse courte (max 100 car.)"}. N'inclure que les questions répondues.`;
+  fill.style.width = '10%';
+  setStatus('aStatus', '🔊 Lecture en cours — haut-parleurs requis, microphone activé...');
 
   try {
+    fill.style.width = '30%';
+    const transcript = await transcribeAudioWithSpeechAPI(loadedAudioBase64, loadedAudioMediaType);
+
+    if (!transcript) {
+      setStatus('aStatus', '✕ Transcription vide — vérifiez que vos haut-parleurs et microphone fonctionnent.');
+      prog.classList.remove('active'); fill.style.width = '0%';
+      return;
+    }
+
     fill.style.width = '60%';
-    const content = await callClaudeAPIWithAudio(apiKey, loadedAudioBase64, loadedAudioMediaType, prompt);
+    setStatus('aStatus', '🔍 Analyse par Claude...');
+    const content = await callClaudeAPI(apiKey, buildCheckPrompt(transcript));
     const answers = parseJsonSafe(content);
     applyAnswers(answers);
     fill.style.width = '100%';
@@ -1200,46 +1198,69 @@ async function callClaudeAPI(apiKey, userPrompt) {
   throw new Error('Réponse vide ou structure inattendue');
 }
 
-async function callClaudeAPIWithAudio(apiKey, audioBase64, mediaType, textPrompt) {
-  const model = document.getElementById('cfgModel').value.trim() || 'claude-sonnet-4-20250514';
-  const maxTokens = parseInt(document.getElementById('cfgMaxTokens').value) || 8192;
+function transcribeAudioWithSpeechAPI(audioBase64, mediaType) {
+  return new Promise((resolve, reject) => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      reject(new Error('Reconnaissance vocale non supportée. Utilisez Chrome ou Edge.'));
+      return;
+    }
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: model,
-      max_tokens: maxTokens,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'audio',
-              source: { type: 'base64', media_type: mediaType, data: audioBase64 }
-            },
-            { type: 'text', text: textPrompt }
-          ]
+    const binary = atob(audioBase64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mediaType });
+    const audioUrl = URL.createObjectURL(blob);
+
+    const audio = new Audio(audioUrl);
+    const rec = new SR();
+    rec.continuous = true;
+    rec.interimResults = false;
+    rec.lang = 'fr-FR';
+
+    let transcript = '';
+    let finished = false;
+
+    function finish() {
+      if (finished) return;
+      finished = true;
+      try { rec.stop(); } catch (_) {}
+      audio.pause();
+      URL.revokeObjectURL(audioUrl);
+      resolve(transcript.trim());
+    }
+
+    rec.onresult = (e) => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          transcript += e.results[i][0].transcript + ' ';
+          setStatus('aStatus', `🎙 Transcription en cours... (${transcript.length} car.)`);
         }
-      ]
-    })
+      }
+    };
+
+    rec.onerror = (e) => {
+      if (e.error === 'not-allowed') {
+        reject(new Error('Accès au microphone refusé.'));
+      } else if (e.error !== 'no-speech') {
+        reject(new Error('Erreur reconnaissance vocale : ' + e.error));
+      }
+    };
+
+    rec.onend = () => {
+      if (!finished && !audio.ended) {
+        try { rec.start(); } catch (_) {}
+      } else {
+        finish();
+      }
+    };
+
+    audio.onended = () => { setTimeout(finish, 1500); };
+    audio.onerror = () => { reject(new Error('Impossible de lire le fichier audio.')); };
+
+    rec.start();
+    audio.play().catch(e => reject(new Error('Lecture audio impossible : ' + e.message)));
   });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errText.substring(0, 200)}`);
-  }
-
-  const data = await response.json();
-  if (data.content && data.content.length > 0) {
-    return data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
-  }
-  throw new Error('Réponse vide ou structure inattendue');
 }
 
 /* ═══════════════════════════════════════
