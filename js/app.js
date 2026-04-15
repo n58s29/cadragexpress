@@ -1252,6 +1252,68 @@ async function transcribeAudioWithWhisper(audioBase64, mediaType) {
 }
 
 /* ═══════════════════════════════════════
+   PRINT TRAME
+   ═══════════════════════════════════════ */
+function printTrame() {
+  if (!questionDefs.blocs || questionDefs.blocs.length === 0) {
+    alert('Questionnaire non chargé — lancez via un serveur HTTP local.');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+  const borderColors = [
+    '#4a90d9','#5cb85c','#f0ad4e','#d94a7a','#9b59b6',
+    '#1abc9c','#e67e22','#3498db','#e74c3c','#2ecc71',
+    '#8e44ad','#d35400','#2980b9','#c0392b','#27ae60'
+  ];
+
+  let rows = '';
+  questionDefs.blocs.forEach((bloc, i) => {
+    const color = borderColors[i % borderColors.length];
+    const bg = color + '18';
+    rows += `<div class="bloc">
+      <div class="bh" style="background:${bg};border-left-color:${color};">${bloc.icone} ${bloc.id}. ${bloc.titre}</div>`;
+    bloc.questions.forEach(q => {
+      rows += `<div class="q"><span class="cb"></span><span class="qid">${q.id}</span><span class="qt">${q.texte}</span></div>`;
+    });
+    rows += `</div>`;
+  });
+
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<title>Trame de cadrage</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,Helvetica,sans-serif;font-size:7.5pt;color:#1a1a1a;background:#fff}
+@page{size:A4 portrait;margin:10mm}
+.ph{text-align:center;margin-bottom:4mm;padding-bottom:3mm;border-bottom:1.5pt solid #333}
+.ph h1{font-size:11.5pt;font-weight:bold;letter-spacing:.3pt}
+.ph .sub{font-size:7pt;color:#777;margin-top:1.5mm}
+.cols{column-count:2;column-gap:5mm;column-rule:.5pt solid #d0d0d0}
+.bloc{margin-bottom:2.5mm;break-inside:avoid}
+.bh{font-weight:bold;font-size:7.5pt;padding:1mm 2mm;border-left:2.5pt solid;margin-bottom:.5mm;break-after:avoid}
+.q{display:flex;align-items:flex-start;padding:.7mm 0 .7mm 1.5mm;border-bottom:.3pt dotted #ccc;break-inside:avoid;gap:1.5mm}
+.cb{width:3.3mm;height:3.3mm;min-width:3.3mm;border:.7pt solid #999;display:inline-block;margin-top:.3mm;flex-shrink:0}
+.qid{min-width:6mm;font-weight:bold;color:#777;font-size:6.5pt;padding-top:.2mm;white-space:nowrap;flex-shrink:0}
+.qt{flex:1;line-height:1.35}
+.pf{margin-top:3mm;text-align:center;font-size:6pt;color:#bbb;border-top:.5pt solid #e8e8e8;padding-top:2mm}
+</style></head><body>
+<div class="ph">
+  <h1>🗂&nbsp; Trame de cadrage &mdash; Questions clés</h1>
+  <div class="sub">65 questions &nbsp;&bull;&nbsp; 15 thèmes &nbsp;&bull;&nbsp; Imprimé le ${today} &nbsp;&bull;&nbsp; Cadrage Express</div>
+</div>
+<div class="cols">${rows}</div>
+<div class="pf">Cadrage Express &mdash; trame de questions de cadrage métier &mdash; ${today}</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`;
+
+  const win = window.open('', '_blank', 'width=820,height=1000');
+  if (!win) { alert('Fenêtre bloquée — autorisez les popups pour ce site.'); return; }
+  win.document.write(html);
+  win.document.close();
+}
+
+/* ═══════════════════════════════════════
    UTILS
    ═══════════════════════════════════════ */
 function esc(s) {
