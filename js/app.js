@@ -762,14 +762,14 @@ async function runAnalysisFromAudio() {
   const fill = document.getElementById('aProgFill');
   prog.classList.add('active');
   fill.style.width = '10%';
-  setStatus('aStatus', '🔊 Lecture en cours — haut-parleurs requis, microphone activé...');
+  setStatus('aStatus', '📥 Chargement modèle Whisper...');
 
   try {
     fill.style.width = '30%';
-    const transcript = await transcribeAudioWithSpeechAPI(loadedAudioBase64, loadedAudioMediaType);
+    const transcript = await transcribeAudioWithWhisper(loadedAudioBase64, loadedAudioMediaType);
 
     if (!transcript) {
-      setStatus('aStatus', '✕ Transcription vide — vérifiez que vos haut-parleurs et microphone fonctionnent.');
+      setStatus('aStatus', '✕ Transcription vide — le fichier audio est peut-être silencieux ou non supporté.');
       prog.classList.remove('active'); fill.style.width = '0%';
       return;
     }
@@ -1198,69 +1198,56 @@ async function callClaudeAPI(apiKey, userPrompt) {
   throw new Error('Réponse vide ou structure inattendue');
 }
 
-function transcribeAudioWithSpeechAPI(audioBase64, mediaType) {
-  return new Promise((resolve, reject) => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) {
-      reject(new Error('Reconnaissance vocale non supportée. Utilisez Chrome ou Edge.'));
-      return;
-    }
+let _whisperPipeline = null;
 
-    const binary = atob(audioBase64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    const blob = new Blob([bytes], { type: mediaType });
-    const audioUrl = URL.createObjectURL(blob);
-
-    const audio = new Audio(audioUrl);
-    const rec = new SR();
-    rec.continuous = true;
-    rec.interimResults = false;
-    rec.lang = 'fr-FR';
-
-    let transcript = '';
-    let finished = false;
-
-    function finish() {
-      if (finished) return;
-      finished = true;
-      try { rec.stop(); } catch (_) {}
-      audio.pause();
-      URL.revokeObjectURL(audioUrl);
-      resolve(transcript.trim());
-    }
-
-    rec.onresult = (e) => {
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          transcript += e.results[i][0].transcript + ' ';
-          setStatus('aStatus', `🎙 Transcription en cours... (${transcript.length} car.)`);
+async function transcribeAudioWithWhisper(audioBase64, mediaType) {
+  if (!_whisperPipeline) {
+    setStatus('aStatus', '📥 Chargement modèle Whisper (premier lancement ~60 Mo)...');
+    const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+    env.allowLocalModels = false;
+    _whisperPipeline = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny', {
+      progress_callback: (p) => {
+        if (p.status === 'progress' || p.status === 'downloading') {
+          setStatus('aStatus', `📥 Téléchargement modèle : ${Math.round(p.progress || 0)}%`);
         }
       }
-    };
+    });
+  }
 
-    rec.onerror = (e) => {
-      if (e.error === 'not-allowed') {
-        reject(new Error('Accès au microphone refusé.'));
-      } else if (e.error !== 'no-speech') {
-        reject(new Error('Erreur reconnaissance vocale : ' + e.error));
-      }
-    };
+  setStatus('aStatus', '🎙 Transcription en cours...');
 
-    rec.onend = () => {
-      if (!finished && !audio.ended) {
-        try { rec.start(); } catch (_) {}
-      } else {
-        finish();
-      }
-    };
+  // Decode audio base64 → ArrayBuffer
+  const binary = atob(audioBase64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
-    audio.onended = () => { setTimeout(finish, 1500); };
-    audio.onerror = () => { reject(new Error('Impossible de lire le fichier audio.')); };
+  // Decode audio and resample to 16 kHz mono via OfflineAudioContext
+  const tmpCtx = new AudioContext();
+  let audioBuffer;
+  try {
+    audioBuffer = await tmpCtx.decodeAudioData(bytes.buffer.slice(0));
+  } finally {
+    tmpCtx.close();
+  }
 
-    rec.start();
-    audio.play().catch(e => reject(new Error('Lecture audio impossible : ' + e.message)));
+  const TARGET_RATE = 16000;
+  const offlineCtx = new OfflineAudioContext(1, Math.ceil(audioBuffer.duration * TARGET_RATE), TARGET_RATE);
+  const src = offlineCtx.createBufferSource();
+  src.buffer = audioBuffer;
+  src.connect(offlineCtx.destination);
+  src.start();
+  const resampled = await offlineCtx.startRendering();
+  const float32 = resampled.getChannelData(0);
+
+  const result = await _whisperPipeline(float32, {
+    language: 'french',
+    task: 'transcribe',
+    sampling_rate: TARGET_RATE,
+    chunk_length_s: 30,
+    stride_length_s: 5
   });
+
+  return result.text.trim();
 }
 
 /* ═══════════════════════════════════════
