@@ -5,6 +5,17 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.4.1] — 2026-04-16
+
+### Corrigé — Génération bloquée (sandbox iframe) + journal API amélioré
+
+- **Correctif critique** : `sandbox=""` sur les iframes livrables bloquait silencieusement `contentDocument.write()` (origine opaque ⇒ accès refusé), ce qui coupait `generateCadrage()` dès l'écriture des pages de chargement — les 3 appels API ne partaient jamais. Corrigé en `sandbox="allow-same-origin"` (scripts toujours désactivés, seul l'accès DOM parent est restauré)
+- **Journal API — scroll** : hauteur fixe `220px` + `overflow-y: scroll` forcé (remplace `max-height` + `auto` qui ne scrollait pas)
+- **Journal API — console mirror** : chaque entrée est aussi émise via `console.log/warn/error` pour inspection dans les DevTools Réseau/Console
+- **Handler `unhandledrejection`** : tout rejet de Promise non intercepté est désormais capturé et affiché dans le journal (+ `console.error`) — plus d'erreurs silencieuses
+
+---
+
 ## [8.4.0] — 2026-04-16
 
 ### Corrigé — Modèle déprécié + Ajouté — Journal API en temps réel

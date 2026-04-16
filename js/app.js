@@ -204,6 +204,13 @@ async function init() {
   updateCfg();
   initDragDrop();
   openWelcome();
+
+  // Capture les rejets de Promise non gérés (erreurs silencieuses)
+  window.addEventListener('unhandledrejection', (event) => {
+    const msg = event.reason?.message || String(event.reason) || 'Erreur inconnue';
+    appendLog(`[Rejet Promise non géré] ${msg}`, 'error');
+    console.error('[CadrageExpress] unhandledrejection:', event.reason);
+  });
 }
 init();
 
@@ -1519,6 +1526,9 @@ function appendLog(msg, level = 'info') {
   _logCount++;
   const now = new Date();
   const ts = now.toTimeString().slice(0, 8);
+  // Mirror systématique vers la console DevTools
+  const consoleFn = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
+  consoleFn(`[CadrageExpress][${ts}] ${msg}`);
   const el = document.getElementById('logContainer');
   if (!el) return;
 
