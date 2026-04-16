@@ -1,7 +1,18 @@
-# Changelog — Cadrage Express
+# Changelog — CLARITY
 
 Toutes les modifications notables sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
+
+---
+
+## [8.5.0] — 2026-04-16
+
+### Renommé — Cadrage Express devient CLARITY
+
+- Renommage complet de l'application : `Cadrage Express` → `CLARITY` dans tous les fichiers sources (index.html, app.js, README, CHANGELOG)
+- Titre de l'onglet navigateur : `CLARITY — Cadrage de projets IA`
+- Logo nav et modal d'accueil mis à jour : `CE` → `CL`
+- Footer et livrables générés utilisent désormais `CLARITY` comme nom de marque par défaut
 
 ---
 

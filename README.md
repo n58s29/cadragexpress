@@ -1,4 +1,4 @@
-# Cadrage Express
+# CLARITY
 
 **Outil de cadrage de projets d'innovation assisté par IA**
 Fabrique de l'Adoption Numérique (FAN) — e.SNCF Solutions
@@ -7,7 +7,7 @@ Fabrique de l'Adoption Numérique (FAN) — e.SNCF Solutions
 
 ## Présentation
 
-Cadrage Express est une application web monopage (SPA) permettant de cadrer rapidement un projet d'innovation numérique à partir de sources variées (audio, PDF, texte, saisie manuelle). Elle génère automatiquement trois livrables prêts à l'emploi grâce à l'API Claude d'Anthropic.
+CLARITY est une application web monopage (SPA) permettant de cadrer rapidement un projet d'innovation numérique à partir de sources variées (audio, PDF, texte, saisie manuelle). Elle génère automatiquement trois livrables prêts à l'emploi grâce à l'API Claude d'Anthropic.
 
 L'outil est conçu pour les équipes FAN / 574, les facilitateurs d'innovation et les porteurs de projets SNCF qui souhaitent structurer un besoin métier avant de lancer un cadrage formalisé.
 
@@ -257,7 +257,7 @@ L'utilisateur peut cocher "Ne plus afficher" pour masquer le modal lors des sess
 
 ## Mentions d'utilisation
 
-Les contenus produits par Cadrage Express sont générés par intelligence artificielle (Claude, Anthropic) et ont une valeur **indicative**. Ils doivent être relus, validés et complétés par les experts métier et techniques concernés avant toute décision ou engagement. Ne saisissez pas d'informations personnelles sensibles ou classifiées. L'utilisation est soumise aux [conditions d'utilisation Anthropic](https://www.anthropic.com/legal/consumer-usage-policy).
+Les contenus produits par CLARITY sont générés par intelligence artificielle (Claude, Anthropic) et ont une valeur **indicative**. Ils doivent être relus, validés et complétés par les experts métier et techniques concernés avant toute décision ou engagement. Ne saisissez pas d'informations personnelles sensibles ou classifiées. L'utilisation est soumise aux [conditions d'utilisation Anthropic](https://www.anthropic.com/legal/consumer-usage-policy).
 
 ---
 
@@ -267,4 +267,4 @@ Le projet est maintenu par l'équipe FAN / 574. Pour toute suggestion ou anomali
 
 ---
 
-*Cadrage Express v8.3.0 — Fabrique de l'Adoption Numérique — e.SNCF Solutions*
+*CLARITY v8.3.0 — Fabrique de l'Adoption Numérique — e.SNCF Solutions*

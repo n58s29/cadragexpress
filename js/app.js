@@ -1454,7 +1454,7 @@ Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
 }
 
 function buildMockPrompt(ctx, designCtx, brandName) {
-  const appName = brandName || 'Cadrage Express';
+  const appName = brandName || 'CLARITY';
   const designSection = designCtx
     ? `\nIDENTITÉ DE MARQUE (respecter impérativement pour tous les choix visuels — couleurs, typo, ton, composants) :\n${designCtx}\n`
     : `\n- Palette : fond #F0F1F4, surfaces blanches, titres bleu #0088CE, accents #DC582A, texte #3C3732\n- Police system sans-serif (Segoe UI, Arial)\n`;
@@ -1494,7 +1494,7 @@ Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
 }
 
 function buildCadragePrompt(ctx, designCtx, brandName) {
-  const appName = brandName || 'Cadrage Express';
+  const appName = brandName || 'CLARITY';
   const designSection = designCtx
     ? `\n\nIDENTITÉ DE MARQUE (respecter impérativement pour couleurs, typographie et ton éditorial du document) :\n${designCtx}\n`
     : `\n\n- Design sobre, lisible, imprimable : fond blanc, titres bleu #0088CE, tags orange #DC582A\n`;
@@ -1794,10 +1794,10 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:7.5pt;color:#1a1a1a;backgr
 </style></head><body>
 <div class="ph">
   <h1>🗂&nbsp; Trame de cadrage &mdash; Questions clés</h1>
-  <div class="sub">65 questions &nbsp;&bull;&nbsp; 15 thèmes &nbsp;&bull;&nbsp; Imprimé le ${today} &nbsp;&bull;&nbsp; Cadrage Express</div>
+  <div class="sub">65 questions &nbsp;&bull;&nbsp; 15 thèmes &nbsp;&bull;&nbsp; Imprimé le ${today} &nbsp;&bull;&nbsp; CLARITY</div>
 </div>
 <div class="cols">${rows}</div>
-<div class="pf">Cadrage Express &mdash; trame de questions de cadrage métier &mdash; ${today}</div>
+<div class="pf">CLARITY &mdash; trame de questions de cadrage métier &mdash; ${today}</div>
 <script>window.onload=function(){window.print()}<\/script>
 </body></html>`;
 
