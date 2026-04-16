@@ -1151,6 +1151,7 @@ async function analyzeText(text, progId = 'fProg', fillId = 'fProgFill', statusI
   prog.classList.add('active');
   fill.style.width = '40%';
   setStatus(statusId, '🔄 Analyse par Claude...');
+  appendLog(`Analyse texte — ${text.length.toLocaleString()} caractères`);
 
   try {
     const content = await callClaudeAPI(apiKey, buildCheckPrompt(text));
@@ -1159,8 +1160,10 @@ async function analyzeText(text, progId = 'fProg', fillId = 'fProgFill', statusI
     fill.style.width = '100%';
     const n = Object.keys(answers).length;
     setStatus(statusId, `✓ ${n} question${n > 1 ? 's' : ''} identifiée${n > 1 ? 's' : ''}. Vérifiez et complétez manuellement.`);
+    appendLog(`Analyse terminée — ${n} question(s) identifiée(s)`, 'success');
   } catch (err) {
     setStatus(statusId, '✕ Erreur: ' + err.message);
+    appendLog(`Erreur analyse : ${err.message}`, 'error');
   }
   setTimeout(() => { prog.classList.remove('active'); fill.style.width = '0%'; }, 2000);
 }
@@ -1315,6 +1318,8 @@ async function generateCadrage() {
   }
 
   goStep(2);
+  clearLogs();
+  appendLog(`Génération lancée — ${filledCount} question(s) renseignée(s)`);
   genDone = 0;
   lastSynthHtml = ''; lastMockHtml = ''; lastCadrageHtml = '';
 
@@ -1358,6 +1363,10 @@ ${JSON.stringify(questionnaire)}`;
 async function genDeliverable(apiKey, systemCtx, prompt, key, frameId, statusKey) {
   const startTime = Date.now();
   let lastUpdate = 0;
+  const labels = { synth: 'Synthèse', mock: 'Maquette', cadrage: 'Pré-cadrage' };
+  const label  = labels[key] || key;
+
+  appendLog(`Démarrage livrable "${label}"`);
 
   try {
     const content = await callClaudeAPI(apiKey, prompt, (approxTokens) => {
@@ -1380,14 +1389,17 @@ async function genDeliverable(apiKey, systemCtx, prompt, key, frameId, statusKey
       autoResizeFrame(frameId);
       const approxTokens = Math.round(content.length / 4);
       setGenStatus(statusKey, 'done', `✓ Terminé — ${approxTokens.toLocaleString()} tokens · ${elapsed}s`);
+      appendLog(`"${label}" généré — ${approxTokens.toLocaleString()} tokens · ${elapsed}s`, 'success');
     } else {
       setGenStatus(statusKey, 'error', '⚠ Contenu vide');
+      appendLog(`"${label}" : contenu vide reçu`, 'warn');
     }
   } catch (err) {
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     const msg = err.name === 'AbortError' ? 'Timeout dépassé (2 min)' : err.message.substring(0, 60);
     setGenStatus(statusKey, 'error', `✕ ${msg} (${elapsed}s)`);
     writeToFrame(frameId, errorPage(err.message));
+    appendLog(`Erreur "${label}" (${elapsed}s) : ${err.message.substring(0, 100)}`, 'error');
   }
   onGenPartDone();
 }
@@ -1498,11 +1510,60 @@ Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
 }
 
 /* ═══════════════════════════════════════
+   JOURNAL / LOG PANEL
+   ═══════════════════════════════════════ */
+let _logCount = 0;
+let _logCollapsed = false;
+
+function appendLog(msg, level = 'info') {
+  _logCount++;
+  const now = new Date();
+  const ts = now.toTimeString().slice(0, 8);
+  const el = document.getElementById('logContainer');
+  if (!el) return;
+
+  // Rendre le panneau visible dès le premier log
+  const card = document.getElementById('logCard');
+  if (card) card.style.display = 'block';
+
+  const colors  = { info: '#94a3b8', success: '#4ade80', warn: '#fbbf24', error: '#f87171' };
+  const prefixes = { info: '   ', success: '✓  ', warn: '⚠  ', error: '✕  ' };
+
+  const line = document.createElement('div');
+  line.style.cssText = `color:${colors[level] || colors.info};white-space:pre-wrap;word-break:break-all;`;
+  line.textContent = `[${ts}] ${prefixes[level] || '   '}${msg}`;
+  el.appendChild(line);
+
+  if (!_logCollapsed) el.scrollTop = el.scrollHeight;
+
+  const countEl = document.getElementById('logCount');
+  if (countEl) countEl.textContent = `(${_logCount})`;
+}
+
+function clearLogs() {
+  _logCount = 0;
+  const el = document.getElementById('logContainer');
+  if (el) el.innerHTML = '';
+  const countEl = document.getElementById('logCount');
+  if (countEl) countEl.textContent = '';
+}
+
+function toggleLogPanel() {
+  _logCollapsed = !_logCollapsed;
+  const body    = document.getElementById('logBody');
+  const chevron = document.getElementById('logChevron');
+  if (body)    body.style.display = _logCollapsed ? 'none' : '';
+  if (chevron) chevron.style.transform = _logCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+}
+
+/* ═══════════════════════════════════════
    CLAUDE API
    ═══════════════════════════════════════ */
 async function callClaudeAPI(apiKey, userPrompt, onProgress = null) {
-  const model = document.getElementById('cfgModel').value.trim() || 'claude-sonnet-4-20250514';
+  const model = document.getElementById('cfgModel').value.trim() || 'claude-sonnet-4-6';
   const maxTokens = parseInt(document.getElementById('cfgMaxTokens').value) || 8192;
+
+  appendLog(`→ ${model} · max ${maxTokens.toLocaleString()} tokens · prompt ${Math.round(userPrompt.length / 4).toLocaleString()} tok. estimés`);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
@@ -1529,14 +1590,18 @@ async function callClaudeAPI(apiKey, userPrompt, onProgress = null) {
 
     if (!response.ok) {
       const errText = await response.text();
+      appendLog(`HTTP ${response.status} — ${errText.substring(0, 150)}`, 'error');
       throw new Error(`HTTP ${response.status}: ${errText.substring(0, 200)}`);
     }
+
+    appendLog(`HTTP ${response.status} OK — streaming en cours…`, 'success');
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let fullText = '';
     let buffer = '';
     let outputTokens = 0;
+    let lastLogAt = 0;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -1556,6 +1621,11 @@ async function callClaudeAPI(apiKey, userPrompt, onProgress = null) {
           if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
             fullText += evt.delta.text;
             if (onProgress) onProgress(Math.round(fullText.length / 4));
+            // Log de progression toutes les 10 000 chars (~2 500 tokens)
+            if (fullText.length - lastLogAt >= 10000) {
+              lastLogAt = fullText.length;
+              appendLog(`  streaming… ${Math.round(fullText.length / 4).toLocaleString()} tokens reçus`);
+            }
           } else if (evt.type === 'message_delta' && evt.usage?.output_tokens) {
             outputTokens = evt.usage.output_tokens;
           }
@@ -1563,9 +1633,18 @@ async function callClaudeAPI(apiKey, userPrompt, onProgress = null) {
       }
     }
 
-    if (fullText.length === 0) throw new Error('Réponse vide ou structure inattendue');
+    if (fullText.length === 0) {
+      appendLog('Réponse vide — structure inattendue', 'error');
+      throw new Error('Réponse vide ou structure inattendue');
+    }
+    const finalTok = outputTokens > 0 ? outputTokens : Math.round(fullText.length / 4);
+    appendLog(`Streaming terminé — ${finalTok.toLocaleString()} tokens output`, 'success');
     if (onProgress && outputTokens > 0) onProgress(outputTokens); // final call with real count
     return fullText;
+  } catch (err) {
+    if (err.name === 'AbortError') appendLog('Timeout 2 min — connexion interrompue', 'warn');
+    else if (err.message && !err.message.startsWith('HTTP')) appendLog(`Exception réseau : ${err.message}`, 'error');
+    throw err;
   } finally {
     clearTimeout(timeoutId);
   }

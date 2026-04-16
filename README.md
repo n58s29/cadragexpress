@@ -69,6 +69,8 @@ Les trois livrables respectent l'identité de marque définie dans la configurat
 
 **Génération en streaming** : chaque livrable affiche en temps réel le nombre de tokens générés et le temps écoulé (`⏳ X tokens… (Xs)`). Un timeout de 2 minutes protège contre les blocages réseau.
 
+**Journal API** : panneau de logs en temps réel (colonne gauche, étape Livrables) — affiche le modèle appelé, le statut HTTP, les jalons de streaming et les erreurs complètes (clé invalide, modèle introuvable, quota dépassé, etc.).
+
 ---
 
 ## Architecture
@@ -149,8 +151,7 @@ Ouvrir `index.html` directement dans le navigateur.
 | Modèle | Audio | Qualité | Vitesse |
 |--------|-------|---------|---------|
 | Claude Opus 4.6 | ✓ | Maximale | Lente |
-| Claude Sonnet 4.6 | ✓ | Haute | Rapide |
-| Claude Sonnet 4 | ✓ | Haute | Rapide |
+| Claude Sonnet 4.6 *(défaut)* | ✓ | Haute | Rapide |
 | Claude Haiku 4.5 | ✗ | Standard | Très rapide |
 | Claude Haiku 3.5 | ✗ | Standard | Très rapide |
 

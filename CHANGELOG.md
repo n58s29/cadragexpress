@@ -5,6 +5,22 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.4.0] — 2026-04-16
+
+### Corrigé — Modèle déprécié + Ajouté — Journal API en temps réel
+
+- **Correctif critique** : `claude-sonnet-4-20250514` supprimé du sélecteur de modèles — ce modèle déprécié retournait une erreur `404` silencieuse qui bloquait indéfiniment la génération des livrables (spinners infinis). `claude-sonnet-4-6` est maintenant le modèle par défaut
+- **Journal API** : nouveau panneau "Journal API" dans la colonne gauche de l'étape Livrables — s'affiche automatiquement au lancement de la génération
+  - Horodatage `[HH:MM:SS]` pour chaque événement
+  - Niveau coloré : gris (info) · vert (succès) · orange (avertissement) · rouge (erreur)
+  - Détail visible : modèle appelé, tokens estimés du prompt, statut HTTP, jalons de streaming (~2 500 tokens), tokens output finaux, temps écoulé par livrable
+  - Erreurs HTTP complètes (401 clé invalide, 404 modèle introuvable, 429 quota, 500 serveur…) affichées en clair
+  - Bouton "Effacer" + collapse/expand du panneau
+- Instrumentation `analyzeText` : les erreurs d'analyse (étape 1) s'affichent aussi dans le journal
+- Version footer : `v8.3.0` → `v8.4.0`
+
+---
+
 ## [8.3.1] — 2026-04-15
 
 ### Amélioré — Streaming SSE, avancement en temps réel et timeout sur la génération
