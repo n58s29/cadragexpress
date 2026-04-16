@@ -62,10 +62,12 @@ Chaque agent enrichit les livrables selon son prisme d'expertise :
 ### Trois livrables générés en parallèle
 
 1. **Synthèse structurée** — Reformulation chiffrée avec scénarios Baseline/MVP/Scale, SWOT, roadmap
-2. **Maquette applicative** — Prototype HTML visuel de l'application envisagée
+2. **Maquette applicative** — Prototype HTML interactif haute fidélité : navigation SPA-like fonctionnelle, design premium (qualité Notion/Linear), responsive, données fictives réalistes
 3. **Pré-cadrage technique** — Exigences fonctionnelles/non-fonctionnelles, architecture, RGPD, questions ouvertes
 
 Les trois livrables respectent l'identité de marque définie dans la configuration (`design.md`) lorsqu'elle est fournie.
+
+**Maquette haute fidélité** : prototype HTML interactif — boutons et navigation fonctionnels (SPA-like), responsive (100vw/100vh, pas de taille fixe), design premium niveau SaaS B2B, données fictives réalistes sur tous les écrans.
 
 **Génération en streaming** : chaque livrable affiche en temps réel le nombre de tokens générés et le temps écoulé (`⏳ X tokens… (Xs)`). Le timeout est adaptatif : le timer de 60 s se remet à zéro à chaque chunk reçu — un stream actif n'est jamais interrompu. Plafond absolu à 10 minutes.
 

@@ -5,6 +5,18 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.4.3] — 2026-04-16
+
+### Amélioré — Maquette haute fidélité : interactivité obligatoire + responsive
+
+- **Qualité premium imposée** : les instructions de génération exigent désormais un rendu "démo produit" (niveau Notion/Linear/SaaS B2B), pas un wireframe — reformulation explicite de l'ambition attendue
+- **Interactivité obligatoire** : navigation SPA-like entre écrans en JavaScript pur (show/hide), boutons et onglets fonctionnels, lignes cliquables → vue détail, au moins 2-3 modales/dropdowns/tooltips selon le contexte
+- **Responsive corrigé** : tailles fixes en pixels interdites, layout en `100vw/100vh` + media queries — la maquette s'ouvre correctement dans n'importe quel navigateur sans rester bloquée dans un format iframe
+- **Design system précisé** : sidebar 240 px fixe, header 56 px sticky, ombres et border-radius normalisés, couleurs sémantiques d'état codées (vert/orange/rouge/bleu), typographie à 3 niveaux de hiérarchie minimum
+- **Données fictives renforcées** : chaque écran doit être entièrement rempli (noms, chiffres, KPIs, graphiques SVG, badges)
+
+---
+
 ## [8.4.2] — 2026-04-16
 
 ### Amélioré — Timeout adaptatif : plus d'interruption si des tokens arrivent

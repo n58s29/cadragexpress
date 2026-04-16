@@ -1464,21 +1464,31 @@ function buildMockPrompt(ctx, designCtx, brandName) {
 À partir du besoin métier décrit dans le questionnaire${uxSection ? ' et des données UX-Pilot fournies' : ''}, génère une MAQUETTE HTML de ce à quoi l'application ou la webapp demandée POURRAIT RESSEMBLER une fois réalisée.
 
 CE QUE TU DOIS FAIRE :
-- Créer un PROTOTYPE VISUEL (mockup) de l'interface utilisateur de la solution envisagée
-- C'est une maquette statique : elle n'a PAS besoin d'être fonctionnelle, elle doit MONTRER à quoi ça ressemblerait
-- Inventer des données fictives réalistes pour remplir les écrans (noms, chiffres, statuts, tableaux de bord...)
-${hasUxScreens ? '- PRIORITÉ ABSOLUE : représenter chaque écran identifié dans la section UX-Pilot ci-dessous' : '- Imaginer les écrans principaux : dashboard, formulaires, listes, tableaux, indicateurs, navigation'}
-- Donner une impression crédible et professionnelle de l'outil fini
+- Créer un PROTOTYPE VISUEL HAUTE FIDÉLITÉ (mockup interactif) de l'interface utilisateur
+- EXIGENCE ABSOLUE DE QUALITÉ : le rendu doit être IMPRESSIONNANT — comme une démo produit devant des décideurs, pas un wireframe
+- Inventer des données fictives réalistes et cohérentes pour remplir TOUS les écrans (noms, chiffres, statuts, tableaux de bord...)
+${hasUxScreens ? '- PRIORITÉ ABSOLUE : représenter chaque écran identifié dans la section UX-Pilot ci-dessous, avec navigation fonctionnelle entre eux' : '- Imaginer et implémenter les écrans principaux navigables : dashboard, formulaires, listes, tableaux, indicateurs, vue détail'}
+- Chaque écran doit être REMPLI de données fictives réalistes (noms, chiffres, statuts, graphiques SVG, badges, KPIs...)
 ${uxSection}
-RÈGLES TECHNIQUES :
-- Page HTML complète et autonome (doctype, head avec <style> intégré, body)
-- Design sobre, moderne, professionnel - comme une vraie webapp d'entreprise
-${designSection}- Utiliser flexbox/grid pour une mise en page réaliste (sidebar, header, cards, tables...)
-- Icônes Unicode pour illustrer la navigation et les sections
-- Barre de navigation en haut ou sidebar avec le nom du projet
-- Footer discret : 'Maquette générée par ${appName} — Prototype non fonctionnel'
+INTERACTIVITÉ OBLIGATOIRE (boutons fonctionnels) :
+- Implémenter la navigation entre écrans en JavaScript pur (SPA-like : cacher/montrer les sections via show/hide)
+- Les boutons de navigation, onglets et liens DOIVENT fonctionner et changer la vue affichée
+- Les formulaires doivent avoir de vrais champs interactifs (focus, hover, inputs, selects)
+- Les lignes de listes/tableaux doivent être cliquables et ouvrir une vue détail
+- Ajouter des micro-interactions : hover states, transitions CSS (0.2s ease), états actifs visuels
+- Au moins 2-3 modales, dropdowns ou tooltips selon le contexte métier
 
-IMPORTANT : Ce n'est PAS un résumé du cadrage. C'est un APERÇU VISUEL de l'application métier que le demandeur souhaite obtenir.
+RÈGLES DE DESIGN (qualité premium, SaaS B2B) :
+- Page HTML RESPONSIVE et autonome (doctype, head avec <style> intégré, body) — PAS de taille fixe en pixels, utiliser 100vw/100vh et media queries
+- Design épuré, moderne, ultra-professionnel — qualité comparable à Notion, Linear ou un outil SaaS B2B
+${designSection}- Layout CSS Grid + Flexbox : sidebar fixe (240px), header sticky (56px), zone contenu scrollable
+- Ombres subtiles (box-shadow: 0 1px 3px rgba(0,0,0,0.1)), border-radius cohérents (6-8px), espacements généreux (16-24px)
+- Icônes Unicode enrichies, badges colorés pour statuts, sparklines SVG pour tendances et métriques
+- Typographie hiérarchique : 3 niveaux de taille minimum, poids variés (400/500/700), line-height lisible
+- Couleurs sémantiques d'état : vert #22c55e succès, orange #f59e0b avertissement, rouge #ef4444 alerte, bleu info
+- Footer discret : 'Maquette générée par ${appName} — Données fictives à titre illustratif'
+
+IMPORTANT : Ce n'est PAS un résumé du cadrage. C'est un PROTOTYPE INTERACTIF qui doit donner envie de construire le vrai produit. Un décideur doit pouvoir naviguer dedans, cliquer, et comprendre immédiatement la valeur de la solution.
 
 Réponds UNIQUEMENT avec le code HTML complet, sans markdown, sans \`\`\`html.`;
 }
