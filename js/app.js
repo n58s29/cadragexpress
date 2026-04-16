@@ -1403,7 +1403,7 @@ async function genDeliverable(apiKey, systemCtx, prompt, key, frameId, statusKey
     }
   } catch (err) {
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    const msg = err.name === 'AbortError' ? 'Timeout dépassé (2 min)' : err.message.substring(0, 60);
+    const msg = err.name === 'AbortError' ? 'Inactivité réseau (60s)' : err.message.substring(0, 60);
     setGenStatus(statusKey, 'error', `✕ ${msg} (${elapsed}s)`);
     writeToFrame(frameId, errorPage(err.message));
     appendLog(`Erreur "${label}" (${elapsed}s) : ${err.message.substring(0, 100)}`, 'error');
@@ -1576,7 +1576,20 @@ async function callClaudeAPI(apiKey, userPrompt, onProgress = null) {
   appendLog(`→ ${model} · max ${maxTokens.toLocaleString()} tokens · prompt ${Math.round(userPrompt.length / 4).toLocaleString()} tok. estimés`);
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
+
+  // Timeout d'inactivité : abort si aucun token reçu pendant INACTIVITY_MS
+  // (reset à chaque token → on n'arrête jamais un stream actif)
+  const INACTIVITY_MS = 60_000;   // 60 s sans token = connexion morte
+  const ABSOLUTE_MS   = 600_000;  // 10 min plafond absolu de sécurité
+  let abortReason = 'inactivity';
+
+  let inactivityId = setTimeout(() => { abortReason = 'inactivity'; controller.abort(); }, INACTIVITY_MS);
+  const absoluteId  = setTimeout(() => { abortReason = 'absolute';  controller.abort(); }, ABSOLUTE_MS);
+
+  const resetInactivity = () => {
+    clearTimeout(inactivityId);
+    inactivityId = setTimeout(() => { abortReason = 'inactivity'; controller.abort(); }, INACTIVITY_MS);
+  };
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1605,6 +1618,7 @@ async function callClaudeAPI(apiKey, userPrompt, onProgress = null) {
     }
 
     appendLog(`HTTP ${response.status} OK — streaming en cours…`, 'success');
+    resetInactivity(); // premier token HTTP reçu, on repart de zéro
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -1616,6 +1630,8 @@ async function callClaudeAPI(apiKey, userPrompt, onProgress = null) {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
+
+      resetInactivity(); // chaque chunk réseau reset le timer d'inactivité
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
@@ -1652,11 +1668,18 @@ async function callClaudeAPI(apiKey, userPrompt, onProgress = null) {
     if (onProgress && outputTokens > 0) onProgress(outputTokens); // final call with real count
     return fullText;
   } catch (err) {
-    if (err.name === 'AbortError') appendLog('Timeout 2 min — connexion interrompue', 'warn');
-    else if (err.message && !err.message.startsWith('HTTP')) appendLog(`Exception réseau : ${err.message}`, 'error');
+    if (err.name === 'AbortError') {
+      const reason = abortReason === 'absolute'
+        ? 'Plafond 10 min atteint'
+        : 'Inactivité 60s — connexion interrompue';
+      appendLog(reason, 'warn');
+    } else if (err.message && !err.message.startsWith('HTTP')) {
+      appendLog(`Exception réseau : ${err.message}`, 'error');
+    }
     throw err;
   } finally {
-    clearTimeout(timeoutId);
+    clearTimeout(inactivityId);
+    clearTimeout(absoluteId);
   }
 }
 

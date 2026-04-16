@@ -5,6 +5,16 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [8.4.2] — 2026-04-16
+
+### Amélioré — Timeout adaptatif : plus d'interruption si des tokens arrivent
+
+- **Timeout d'inactivité** : remplace le timeout fixe 2 min — le timer (60 s) se remet à zéro à chaque chunk réseau reçu ; un stream actif n'est donc jamais interrompu
+- **Plafond absolu** : 10 min de garde-fou (était 2 min) pour éviter les boucles infinies en cas de bug API
+- Message d'erreur mis à jour : `Inactivité réseau (60s)` ou `Plafond 10 min atteint` selon le cas
+
+---
+
 ## [8.4.1] — 2026-04-16
 
 ### Corrigé — Génération bloquée (sandbox iframe) + journal API amélioré
